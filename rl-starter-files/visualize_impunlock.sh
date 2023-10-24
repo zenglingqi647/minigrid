@@ -1,0 +1,1 @@
+python -m scripts.visualize --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock --text
