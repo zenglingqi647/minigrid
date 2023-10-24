@@ -65,6 +65,8 @@ parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model to handle text input")
 parser.add_argument("--gpt", action="store_true", default=False,
                     help="Use GPT to shape rewards")
+parser.add_argument("--ask_gpt_prob" , type=float, default=0.002,
+                    help="Probability of asking GPT")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -137,7 +139,7 @@ if __name__ == "__main__":
                                 args.optim_alpha, args.optim_eps, preprocess_obss)
     elif args.algo == "ppo":
         if args.gpt:
-            reshape_reward = GPTRewardFunction().reshape_reward
+            reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob).reshape_reward
         else:
             reshape_reward = None
         algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,

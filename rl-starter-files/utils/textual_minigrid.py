@@ -39,7 +39,7 @@ Your agent would like to {act}. Evaluate how this state and action is helpful fo
 '''
 
 class GPTRewardFunction():
-    def __init__(self, query_gpt_prob=0.02, gpt_prob_decay=1):
+    def __init__(self, query_gpt_prob, gpt_prob_decay=1):
         self.query_gpt_prob = query_gpt_prob
         self.gpt_prob_decay = gpt_prob_decay
         self.counter = 0

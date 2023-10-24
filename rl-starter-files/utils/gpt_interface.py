@@ -6,7 +6,6 @@ import openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_reward_from_gpt(prompt):
-    print("Asking GPT about it...")
     output = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
       messages=[
@@ -14,7 +13,6 @@ def generate_reward_from_gpt(prompt):
         {"role": "user", "content": prompt}
       ]
     )
-    print("GPT responsed...")
     return output.choices[0].message['content']
 
 
