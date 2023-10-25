@@ -39,13 +39,25 @@ Your agent would like to {act}. Evaluate how this state and action is helpful fo
 '''
 
 class GPTRewardFunction():
-    def __init__(self, query_gpt_prob, gpt_prob_decay=1):
+    def __init__(self, query_gpt_prob, ask_every, gpt_prob_decay=1):
         self.query_gpt_prob = query_gpt_prob
+        self.ask_interval = ask_every
         self.gpt_prob_decay = gpt_prob_decay
         self.counter = 0
 
+    def should_ask_gpt(self):
+        if self.query_gpt_prob == -1:
+            if self.counter <= 0:
+                self.counter = self.ask_interval
+                return True
+            else:
+                self.counter -= 1
+                return False
+        else:
+            return random.random() < self.query_gpt_prob
+
     def reshape_reward(self, observation, action, reward, done):
-        if random.random() < self.query_gpt_prob:
+        if self.should_ask_gpt():
             gpt_reward = gpt_reward_func(observation, action)
             print(f"gpt reward is {gpt_reward}")
             shaped_reward = reward + gpt_reward

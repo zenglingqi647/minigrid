@@ -65,8 +65,10 @@ parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model to handle text input")
 parser.add_argument("--gpt", action="store_true", default=False,
                     help="Use GPT to shape rewards")
-parser.add_argument("--ask_gpt_prob" , type=float, default=0.002,
-                    help="Probability of asking GPT")
+parser.add_argument("--ask_gpt_prob" , type=float, default=-1,
+                    help="Probability of Asking GPT")
+parser.add_argument("--ask-every", type=float, default=2000,
+                    help="Fixed Interval of Asking GPT")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -139,7 +141,7 @@ if __name__ == "__main__":
                                 args.optim_alpha, args.optim_eps, preprocess_obss)
     elif args.algo == "ppo":
         if args.gpt:
-            reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob).reshape_reward
+            reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob, ask_every=args.ask_every).reshape_reward
         else:
             reshape_reward = None
         algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
-    with tqdm.tqdm(total=args.frames) as pbar:
+    with tqdm.tqdm(total=args.frames, position=0) as pbar:
         while num_frames < args.frames:
             # Update model parameters
             update_start_time = time.time()
