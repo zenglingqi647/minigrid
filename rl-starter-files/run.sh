@@ -1,17 +1,17 @@
 # w. llm
 # a2c
-python3 -m scripts.train --algo a2c --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock-1w-a2c --text --save-interval 10 --frames 250000 --frames-per-proc 5 --gpt
+python3 -m scripts.train --algo a2c --env BabyAI-GoToImpUnlock-v0 --text --save-interval 10 --frames 250000 --use-trajectory --frames-per-proc 5 --gpt
 
 # ppo
-python3 -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock-1w-ppo --text --save-interval 10 --frames 250000 --gpt
+python3 -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --save-interval 10 --frames 250000 --use-trajectory --gpt
 
 
 # w/o. llm
 # a2c
-python3 -m scripts.train --algo a2c --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock-1w-a2c --text --save-interval 10 --frames 250000 --frames-per-proc 5
+python3 -m scripts.train --algo a2c --env BabyAI-GoToImpUnlock-v0 --text --save-interval 10 --frames 250000 --frames-per-proc 5
 
 # ppo
-python3 -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock-1w-ppo --text --save-interval 10 --frames 250000
+python3 -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --save-interval 10 --frames 250000
 
 MiniGrid-BlockedUnlockPickup-v0
 MiniGrid-LavaCrossingS9N1-v0
