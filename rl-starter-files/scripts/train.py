@@ -4,12 +4,13 @@ import datetime
 import torch_ac
 import tensorboardX
 import sys
-import tqdm
+from tqdm import tqdm
 
 import utils
 from utils import device
 from model import ACModel
-from utils.textual_minigrid import *
+from utils.trajectory_reward import *
+# from utils.textual_minigrid import *
 
 
 # Parse arguments
@@ -139,7 +140,7 @@ if __name__ == "__main__":
                                 args.optim_alpha, args.optim_eps, preprocess_obss)
     elif args.algo == "ppo":
         if args.gpt:
-            reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob).reshape_reward
+            reshape_reward = GPTRewardFunction().reshape_reward
         else:
             reshape_reward = None
         algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
-    with tqdm.tqdm(total=args.frames) as pbar:
+    with tqdm(total=args.frames) as pbar:
         while num_frames < args.frames:
             # Update model parameters
             update_start_time = time.time()

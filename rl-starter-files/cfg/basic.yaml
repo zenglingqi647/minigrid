@@ -1,0 +1,4 @@
+query_gpt_interval: 100
+traj_r_decay: 0.7
+llm_temperature: 0.3
+model: "gpt-3.5-turbo"

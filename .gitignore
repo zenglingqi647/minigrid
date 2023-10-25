@@ -1,4 +1,5 @@
 *__pycache__
 *egg-info
 .vscode
-rl-starter-files/run.sh
+setup.sh
+rl-starter-files/storage

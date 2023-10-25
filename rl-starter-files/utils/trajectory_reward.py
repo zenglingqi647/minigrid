@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import random
 import openai
 import json
+import random
 
 IDX_TO_STATE = {v: k for k, v in STATE_TO_IDX.items()}
 DIR_TO_STR = {0: "right", 1: "down", 2: "left", 3: "up"}
@@ -18,19 +19,20 @@ ACTION_TO_STR = {
 }
 
 
-# [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 class GPTRewardFunction():
 
-    def __init__(self, query_gpt_interval=100, decay=0.7):
+    def __init__(self, query_gpt_interval=10000, decay=0.7):
         self.query_gpt_interval = query_gpt_interval
         self.trajectory = []
         self.steps_since_last_query = 0
         self.decay = decay
         self.decay_rate = decay
+        self.steps_before_first_query = 0
+        self.steps_start_query = random.randint(0, query_gpt_interval//2)
 
     def reshape_reward(self, observation, action, reward, done):
         # If it's time to query GPT or the trajectory is empty
-        if self.steps_since_last_query >= self.query_gpt_interval or not self.trajectory:
+        if self.steps_since_last_query >= self.query_gpt_interval and not self.trajectory and self.steps_before_first_query >= self.steps_start_query:
             self.trajectory = self.get_gpt_trajectory(observation)
             self.steps_since_last_query = 0
             self.decay = self.decay_rate
@@ -41,10 +43,13 @@ class GPTRewardFunction():
             if action.item() == expected_action:
                 shaped_reward = reward + self.decay  # Positive reward for following the trajectory
                 self.decay *= self.decay
+            else:
+                shaped_reward = reward  # Neutral or negative reward for deviating
         else:
-            shaped_reward = reward  # Neutral or negative reward for deviating
+            shaped_reward = reward
 
         self.steps_since_last_query += 1
+        self.steps_before_first_query += 1
         return shaped_reward
 
     def get_gpt_trajectory(self, obs):
@@ -58,6 +63,10 @@ class GPTRewardFunction():
         return trajectory
 
 def img_to_str(img):
+    """
+    IDX_TO_OBJECT, IDX_TO_COLOR, IDX_TO_STATE mappings see:
+    https://huggingface.co/spaces/flowers-team/SocialAIDemo/blob/b5027a4ec69027c0ae6a6c471316ca5cb1c36560/gym-minigrid/gym_minigrid/minigrid.py
+    """
     result = ""
     for j in range(img.shape[1]):
         for i in range(img.shape[0]):
@@ -110,6 +119,7 @@ Your answer should only be in json format, no analysis is needed. Each action is
             },
         ],
         temperature=0.3,
+        timeout=10
     )
     return output.choices[0].message['content']
 
@@ -120,7 +130,7 @@ if __name__ == "__main__":
     # Reset the environment to get the initial state
     obs = env.reset()
     # Take some actions and continue displaying the state
-    for _ in range(1):
+    for _ in range():
         action = env.action_space.sample()  # Replace with your desired action
         obs, reward, terminated, truncated, info = env.step(action)
         plt.figure()
@@ -138,3 +148,5 @@ if __name__ == "__main__":
         # Convert the trajectory string to a list of actions
         trajectory = [trajectory_str[f'{i}'] for i in range(10)]
         print(trajectory)
+    
+    
