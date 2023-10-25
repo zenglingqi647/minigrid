@@ -25,18 +25,21 @@ class GPTRewardFunction():
         self.trajectory = []
         self.steps_since_last_query = 0
         self.decay = decay
+        self.decay_rate = decay
 
     def reshape_reward(self, observation, action, reward, done):
         # If it's time to query GPT or the trajectory is empty
         if self.steps_since_last_query >= self.query_gpt_interval or not self.trajectory:
             self.trajectory = self.get_gpt_trajectory(observation)
             self.steps_since_last_query = 0
+            self.decay = self.decay_rate
 
         # Check if the agent's action aligns with the expected trajectory
-        expected_action = self.trajectory.pop(0)
-        if action.item() == expected_action:
-            shaped_reward = reward + self.decay  # Positive reward for following the trajectory
-            self.decay *= self.decay
+        if self.trajectory:
+            expected_action = self.trajectory.pop(0)
+            if action.item() == expected_action:
+                shaped_reward = reward + self.decay  # Positive reward for following the trajectory
+                self.decay *= self.decay
         else:
             shaped_reward = reward  # Neutral or negative reward for deviating
 
