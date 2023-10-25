@@ -66,8 +66,10 @@ parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model to handle text input")
 parser.add_argument("--gpt", action="store_true", default=False,
                     help="Use GPT to shape rewards")
-parser.add_argument("--ask_gpt_prob" , type=float, default=0.002,
-                    help="Probability of asking GPT")
+parser.add_argument("--ask_gpt_prob" , type=float, default=-1,
+                    help="Probability of Asking GPT")
+parser.add_argument("--ask-every", type=float, default=2000,
+                    help="Fixed Interval of Asking GPT")
 
 if __name__ == "__main__":
     args = parser.parse_args()
