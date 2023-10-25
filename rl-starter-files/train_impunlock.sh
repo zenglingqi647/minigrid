@@ -1,0 +1,2 @@
+python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlockNoGPT --text --save-interval 10 --frames 250000
+python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock0.002Ask --text --save-interval 10 --frames 250000 --gpt --ask_gpt_prob 0.002
