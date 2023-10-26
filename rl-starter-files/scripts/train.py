@@ -75,8 +75,8 @@ if __name__ == "__main__":
 
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-    askevery_str = f"askevery{args.ask_every}" if args.llm else ""
-    default_model_name = f"{args.env}_{args.algo}_{args.llm if args.llm else 'None'}_{askevery_str}_seed{args.seed}_{date}"
+    askevery_str = f"_askevery{args.ask_every}" if args.llm else ""
+    default_model_name = f"{args.env}_{args.algo}_{args.llm if args.llm else 'Nollm'}{askevery_str}_seed{args.seed}_{date}"
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)

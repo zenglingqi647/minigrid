@@ -3,3 +3,5 @@
 .vscode
 setup.sh
 rl-starter-files/storage
+ctrl.sh
+rl-starter-files/evaluate/

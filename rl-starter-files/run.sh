@@ -22,3 +22,9 @@ python3 -m scripts.visualize --env MiniGrid-DoorKey-5x5-v0 --model DoorKey
 
 # evaluate
 python3 -m scripts.evaluate --env MiniGrid-DoorKey-5x5-v0 --model DoorKey
+
+
+
+
+MiniGrid-BlockedUnlockPickup all performs bad. The training return are almost all zero. LavaCrossing
+MiniGrid-DistShift1 and Minigrid-SimpleCrossing, a2c outperforms a2c with reshaped reward
