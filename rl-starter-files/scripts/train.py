@@ -75,7 +75,8 @@ if __name__ == "__main__":
 
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-    default_model_name = f"{args.env}_{args.algo}_seed{args.seed}_{date}"
+    askevery_str = f"askevery{args.ask_every}" if args.llm else ""
+    default_model_name = f"{args.env}_{args.algo}_{args.llm if args.llm else 'None'}_{askevery_str}_seed{args.seed}_{date}"
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)
@@ -124,10 +125,14 @@ if __name__ == "__main__":
 
     # Load algo
     if args.algo == "a2c":
+        if not args.frames_per_proc:
+            args.frames_per_proc = 5
         algo = torch_ac.A2CAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
                                 args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
                                 args.optim_alpha, args.optim_eps, preprocess_obss)
     elif args.algo == "ppo":
+        if not args.frames_per_proc:
+            args.frames_per_proc = 128
         if args.llm is not None and args.use_trajectory:
             reshape_reward = LLMRewardFunction(query_interval=args.ask_every,
                                                decay=args.traj_r_decay,
