@@ -11,6 +11,7 @@ from utils import device
 from model import ACModel
 from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
+from utils.planner_policy import PlannerPolicy
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -66,6 +67,7 @@ parser.add_argument('--traj-r-decay', type=float, default=0.7, help='Decay facto
 parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperature for LLM reward')
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
 parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
+parser.add_argument("--use-planner", action="store_true", default=False, help="uses a high level planner network")
 
 
 if __name__ == "__main__":
@@ -116,7 +118,10 @@ if __name__ == "__main__":
     txt_logger.info("Observations preprocessor loaded")
 
     # Load model
-    acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
+    if args.use_planner:
+        acmodel = PlannerPolicy(obs_space, envs[0].action_space, args.mem, args.text)
+    else:
+        acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
         acmodel.load_state_dict(status["model_state"])
     acmodel.to(device)

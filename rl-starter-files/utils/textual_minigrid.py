@@ -5,6 +5,7 @@ from minigrid.core.constants import *
 import matplotlib.pyplot as plt
 from .gpt_interface import *
 import random
+import re
 
 IDX_TO_STATE = {v: k for k, v in STATE_TO_IDX.items()}
 DIR_TO_STR = {0: "right", 1: "down", 2: "left", 3: "up"}
@@ -30,13 +31,37 @@ def get_prompt_str(obs, action):
     image, direction, mission = img_to_str(obs['image']), DIR_TO_STR[obs['direction']], obs['mission']
     act = ACTION_TO_STR[action.item()]
     return f'''
-You are an agent in a Minigrid environment. Your mission is {mission}. The objective location may be in a room different from the one you are in. Rooms are connected with doors. Some doors are unlocked and can be interacted with toggles, however, other doors are locked and you need to find the key of the matching color to open it. You want to do this in as few steps as possible.
-Your agent's direction is currently {direction}.
+You are an agent in a Minigrid environment. Your mission is {mission}. Your agent's direction is currently {direction}.
 Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent. Assume your agent is at the center of the last row. The first row is the furthest in front of you:
 {image}
 
 Your agent would like to {act}. Evaluate how this state and action is helpful for achieving the goal, using a number between -1 and 1. Please only return that single number, and do not return anything else. Do not explain your reasoning, just provide a reward.
 '''
+
+def get_planning_prompt_str(obs):
+    idx = random.randint(0, obs.image.shape[0])
+    image, mission = img_to_str(obs.image[idx]), img_to_str(obs.mission[idx])
+    return f'''You are an agent in a Minigrid environment. Your mission is {mission}. Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent. Assume your agent is at the center of the last row. The first row is the furthest in front of you:
+{image}
+You have the following skills at your disposal:
+Skill 1: Go to Object in the same room
+Skill 2: Open door in the same room
+Skill 3: Pickup an item in the same room
+Skill 4: Put an item next to an item in the same room
+Skill 5: Unlock a door in the same room
+Skill 6: Find an object in a random room
+Skill 7: Go to an object in a random room
+Generate a probability vector for using each of the skills given the circumstance, in a comma separated list enclosed by squared brackets. You may explain your answer if you wish, but you must include the string "answer: [your answer]" somewhere in your response.
+'''
+
+def gpt_planning_prob(obs):
+    prompt = get_planning_prompt_str(obs)
+    response = interact_with_gpt(prompt)
+    match = re.search(r'\[([^]]*)\]', response)
+    if match:
+        probability_vector = [float(num) for num in match.group(1).split(',')]
+    return probability_vector
+
 
 class GPTRewardFunction():
     def __init__(self, query_gpt_prob, ask_every, gpt_prob_decay=1):
@@ -68,7 +93,7 @@ class GPTRewardFunction():
             
 def gpt_reward_func(obs, action):
     prompt = get_prompt_str(obs, action)
-    return float(generate_reward_from_gpt(prompt))
+    return float(interact_with_gpt(prompt))
 
 
 # The things below are just test code.

@@ -5,7 +5,7 @@ import openai
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def generate_reward_from_gpt(prompt):
+def interact_with_gpt(prompt):
     output = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
       messages=[
