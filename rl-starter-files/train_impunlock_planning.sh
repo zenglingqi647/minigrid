@@ -1,0 +1,1 @@
+python -m scripts.train --algo a2c --env BabyAI-GoToImpUnlock-v0 --text --use-planner --frames 500000

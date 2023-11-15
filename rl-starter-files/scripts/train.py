@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
     # Load model
     if args.use_planner:
-        acmodel = PlannerPolicy(obs_space, envs[0].action_space, args.mem, args.text)
+        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, args.mem, args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:

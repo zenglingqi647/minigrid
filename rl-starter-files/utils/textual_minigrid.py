@@ -38,9 +38,8 @@ Your agent can only see in front of itself. It cannot see blocked objects. Here 
 Your agent would like to {act}. Evaluate how this state and action is helpful for achieving the goal, using a number between -1 and 1. Please only return that single number, and do not return anything else. Do not explain your reasoning, just provide a reward.
 '''
 
-def get_planning_prompt_str(obs):
-    idx = random.randint(0, obs.image.shape[0])
-    image, mission = img_to_str(obs.image[idx]), img_to_str(obs.mission[idx])
+def get_planning_prompt_str(obs_img, mission_txt):
+    image, mission = img_to_str(obs_img), mission_txt
     return f'''You are an agent in a Minigrid environment. Your mission is {mission}. Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent. Assume your agent is at the center of the last row. The first row is the furthest in front of you:
 {image}
 You have the following skills at your disposal:
@@ -51,11 +50,12 @@ Skill 4: Put an item next to an item in the same room
 Skill 5: Unlock a door in the same room
 Skill 6: Find an object in a random room
 Skill 7: Go to an object in a random room
-Generate a probability vector for using each of the skills given the circumstance, in a comma separated list enclosed by squared brackets. You may explain your answer if you wish, but you must include the string "answer: [your answer]" somewhere in your response.
+
+In your response, generate a probability vector for using each of the skills, in a comma separated list enclosed by squared brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
 '''
 
-def gpt_planning_prob(obs):
-    prompt = get_planning_prompt_str(obs)
+def gpt_planning_prob(obs, mission_txt):
+    prompt = get_planning_prompt_str(obs, mission_txt)
     response = interact_with_gpt(prompt)
     match = re.search(r'\[([^]]*)\]', response)
     if match:
