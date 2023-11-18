@@ -84,3 +84,8 @@ done
 for env in "${envs[@]}"; do
     python3 -m scripts.train --algo ppo --env $env --text --frames 250000 --use-trajectory --llm gpt-3.5-turbo --ask-every 10000
 done
+
+conda activate bl
+cd /data1/lzengaf/cs285/proj/minigrid/rl-starter-files
+export CUDA_VISIBLE_DEVICES=
+bash /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/train_basic_skills_memory.sh
