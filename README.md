@@ -28,3 +28,18 @@ The problem is, an ask probability of 0.0005 is still very bad...It takes a real
 - The reshaped reward with gpt predicting for a single action and for the next few actions (currently hardcoded as 10) are implemented and merged in the `train.py` and the `utils` folder.
 
 - Add `eval2excel.py` for evaluation and convert the results to excel files.
+
+
+To run:
+```
+/data1/lzengaf/cs285/proj/minigrid/experimental-code/llm-interface/llama2_interface.py
+```
+first run:
+```
+pip install langchain cmake
+export CMAKE_ARGS="-DLLAMA_METAL=on"
+FORCE_CMAKE=1 pip install -U llama-cpp-python --no-cache-dir
+
+curl https://ollama.ai/install.sh | sh
+
+```

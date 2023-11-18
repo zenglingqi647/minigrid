@@ -136,7 +136,7 @@ if __name__ == "__main__":
         obs, reward, terminated, truncated, info = env.step(action)
         plt.figure()
         plt.imshow(env.render())
-        # plt.savefig("test.png")
+        plt.savefig("test.png")
         # print(get_prompt_str(obs))
 
         # print('llm response: ')
