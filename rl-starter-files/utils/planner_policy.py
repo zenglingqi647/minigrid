@@ -7,13 +7,13 @@ from .format import Vocabulary
 
 
 SKILL_MDL_PATH = [
-    "storage\BabyAI-GoToObj-v0_a2c_Nollm_seed1_23-11-04-12-45-27",
-    "storage\BabyAI-OpenDoor-v0_a2c_Nollm_seed1_23-11-04-12-51-14",
-    "storage\BabyAI-PickupDist-v0_a2c_Nollm_seed1_23-11-04-14-00-02",
-    "storage\BabyAI-PutNextLocal-v0_a2c_Nollm_seed1_23-11-04-14-06-44",
-    "storage\BabyAI-UnlockLocal-v0_a2c_Nollm_seed1_23-11-04-14-21-11",
-    "storage\BabyAI-FindObjS5-v0_a2c_Nollm_seed1_23-11-04-14-26-17",
-    "storage\MiniGrid-FourRooms-v0_a2c_Nollm_seed1_23-11-04-14-37-08"
+    "storage\BabyAI-GoToObj-v0_a2c_Nollm_seed1_memory_4",
+    "storage\BabyAI-OpenDoor-v0_a2c_Nollm_seed1_memory_4",
+    "storage\BabyAI-PickupDist-v0_a2c_Nollm_seed1_memory_4",
+    "storage\BabyAI-PutNextLocal-v0_a2c_Nollm_seed1_memory_4",
+    "storage\BabyAI-UnlockLocal-v0_a2c_Nollm_seed1_memory_4",
+    "storage\BabyAI-FindObjS5-v0_a2c_Nollm_seed1_memory_4",
+    "storage\MiniGrid-FourRooms-v0_a2c_Nollm_seed1_memory_4"
 ]
 
 class PlannerPolicy(ACModel):
