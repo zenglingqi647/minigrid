@@ -14,7 +14,7 @@ parser.add_argument("--episodes", type=int, default=100,
                     help="number of episodes of evaluation (default: 100)")
 parser.add_argument("--seed", type=int, default=0,
                     help="random seed (default: 0)")
-parser.add_argument("--res-dir", type=str, default='/data1/lzengaf/cs285/proj/minigrid/rl-starter-files/storage',
+parser.add_argument("--res-dir", type=str, default='/data1/lzengaf/cs285/proj/minigrid/rl-starter-files/storage/',
                     help="random seed (default: 0)")
 parser.add_argument("--excel-dir", type=str, default='/data1/lzengaf/cs285/proj/minigrid/rl-starter-files',
                     help="random seed (default: 0)")
@@ -98,7 +98,8 @@ for model in tqdm(os.listdir(args.res_dir)):
     num_frames_per_episode = utils.synthesize(logs["num_frames_per_episode"])
 
     results = {
-        "env": env,
+        "model": args.model,
+        "env": args.env,
         "F": num_frames,
         "FPS": fps,
         "D": duration,
@@ -109,5 +110,5 @@ for model in tqdm(os.listdir(args.res_dir)):
 
 
 # Save the DataFrame to an Excel file
-df.set_index("env", inplace=True)  # Set 'env' as the row index
+df.set_index("model", inplace=True)  # Set 'env' as the row index
 df.to_excel(f"{args.excel_dir}/results.xlsx")
