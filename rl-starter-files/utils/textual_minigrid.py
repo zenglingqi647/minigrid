@@ -3,7 +3,7 @@
 import gymnasium as gym
 from minigrid.core.constants import *
 import matplotlib.pyplot as plt
-from gpt_interface import *
+from .gpt_interface import *
 import random
 import re
 
@@ -64,7 +64,7 @@ Skill 5: Unlock a door in the same room
 Skill 6: Find an object in a random room
 Skill 7: Go to an object in a random room
 
-In your response, generate a probability vector for using each of the skills, in a comma separated list enclosed by squared brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
+In your response, generate a probability vector for using each of the skills, in a list of decimal numbers, comma-separated and enclosed by square brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
 '''
 
 def gpt_planning_prob(obs, mission_txt):
