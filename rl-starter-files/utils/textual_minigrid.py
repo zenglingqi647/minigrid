@@ -11,6 +11,17 @@ IDX_TO_STATE = {v: k for k, v in STATE_TO_IDX.items()}
 DIR_TO_STR = {0: "right", 1: "down", 2: "left", 3: "up"}
 ACTION_TO_STR = {0: "turn left", 1: "turn right", 2: "move forward", 3: "pick up the object in front", 4: "drop the object in front", 5: "toggle the object in front", 6: "finish the environment"}
 
+def get_relative_position(i, j, img):
+    center = img.shape[0] // 2
+    dist_h = img.shape[1] - j - 1
+    dist_v = i - center
+    if dist_v < 0:
+        return f"{dist_h} steps in front, {-dist_v} steps to the left"
+    elif dist_v > 0:
+        return f"{dist_h} steps in front, {dist_v} steps to the right"
+    else:
+        return f"{dist_h} steps directly in front"
+
 def img_to_str(img):
     result = ""
     for j in range(img.shape[1]):
@@ -18,21 +29,24 @@ def img_to_str(img):
             obj = IDX_TO_OBJECT[img[i, j, 0]]
             color = IDX_TO_COLOR[img[i, j, 1]]
             state = IDX_TO_STATE[img[i, j, 2]]
-            if obj in ["unseen", "empty", "wall"]:
-                result += f"{obj}, "
-            elif obj in ["ball", "box"]:
-                result += f"{color} {obj}, "
+            obj_info = ""
+            if obj in ["ball", "box", "key"]:
+                obj_info = f"{color} {obj}"
+            elif obj in ["door"]:
+                obj_info = f"{color} {state} {obj}"
             else:
-                result += f"{color} {state} {obj}, "
-        result += '\n'
+                continue
+            result += f"There's a {obj_info} {get_relative_position(i, j, img)}. "
+    if len(result) == 0:
+        result += "All you see are floors, walls, and blocked objects. "
     return result
 
-def get_prompt_str(obs, action):
+def get_reward_prompt_str(obs, action):
     image, direction, mission = img_to_str(obs['image']), DIR_TO_STR[obs['direction']], obs['mission']
     act = ACTION_TO_STR[action.item()]
     return f'''
 You are an agent in a Minigrid environment. Your mission is {mission}. Your agent's direction is currently {direction}.
-Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent. Assume your agent is at the center of the last row. The first row is the furthest in front of you:
+Your agent can only see in front of itself. It cannot see blocked objects.
 {image}
 
 Your agent would like to {act}. Evaluate how this state and action is helpful for achieving the goal, using a number between -1 and 1. Please only return that single number, and do not return anything else. Do not explain your reasoning, just provide a reward.
@@ -40,8 +54,7 @@ Your agent would like to {act}. Evaluate how this state and action is helpful fo
 
 def get_planning_prompt_str(obs_img, mission_txt):
     image, mission = img_to_str(obs_img), mission_txt
-    return f'''You are an agent in a Minigrid environment. Your mission is {mission}. Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent. Assume your agent is at the center of the last row. The first row is the furthest in front of you:
-{image}
+    return f'''You are an agent in a Minigrid environment. Your mission is {mission}. Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent: {image}
 You have the following skills at your disposal:
 Skill 1: Go to Object in the same room
 Skill 2: Open door in the same room
@@ -51,7 +64,7 @@ Skill 5: Unlock a door in the same room
 Skill 6: Find an object in a random room
 Skill 7: Go to an object in a random room
 
-In your response, generate a probability vector for using each of the skills, in a comma separated list enclosed by squared brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
+In your response, generate a probability vector for using each of the skills, in a list of decimal numbers, comma-separated and enclosed by square brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
 '''
 
 def gpt_planning_prob(obs, mission_txt):
@@ -92,11 +105,11 @@ class GPTRewardFunction():
         return shaped_reward
             
 def gpt_reward_func(obs, action):
-    prompt = get_prompt_str(obs, action)
+    prompt = get_reward_prompt_str(obs, action)
     return float(interact_with_gpt(prompt))
 
 
-# The things below are just test code.
+# The things below are dry run test code
 if __name__ == "__main__":
     env = gym.make("BabyAI-GoToImpUnlock-v0", render_mode='rgb_array')
     # Reset the environment to get the initial state
@@ -107,6 +120,7 @@ if __name__ == "__main__":
         obs, reward, terminated, truncated, info = env.step(action)
         plt.figure()
         plt.imshow(env.render())
-        print(get_prompt_str(obs))
+        print(obs)
+        print(get_planning_prompt_str(obs['image'], obs['mission']))
     plt.show()
 
