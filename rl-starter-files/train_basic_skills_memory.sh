@@ -23,7 +23,10 @@ python -m scripts.train --algo a2c --env BabyAI-UnlockLocal-v0 --text --frames 1
 python -m scripts.train --algo a2c --env BabyAI-FindObjS5-v0 --text --frames 10000000 --log-interval 10 --recurrence 5
 
 # Skill 7: Go to the green object (in a random room)
-python -m scripts.train --algo a2c --env MiniGrid-FourRooms-v0 --text --frames 10000000 --log-interval 10 --recurrence 5
+python -m scripts.train --algo a2c --env MiniGrid-FourRooms-v0 --text --frames 10000000 --log-interval 10 --recurrence 5 
+
+python -m scripts.train --algo a2c --env FourRooms --text --frames 10000000 --log-interval 10 --recurrence 5 --custom-hw 15
+
 
 
 # Need at least one skill that enables the agent to go to a different room.
@@ -51,3 +54,6 @@ python -m scripts.train --algo ppo --env BabyAI-FindObjS5-v0 --text --frames 100
 python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --frames 10000000 --log-interval 10 --recurrence 16 --frames-per-proc=128
 
 python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --frames-per-proc 40
+
+# hw: 9, 11, 13
+python -m scripts.train --algo ppo --env FourRooms --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --frames-per-proc 40 --custom-hw 11 --seed 2

@@ -7,7 +7,6 @@ from minigrid.minigrid_env import MiniGridEnv
 
 
 class FourRoomsEnv(MiniGridEnv):
-
     """
     ## Description
 
@@ -128,8 +127,13 @@ class FourRoomsEnv(MiniGridEnv):
             self.place_obj(Goal())
 
 
-
-    
 if __name__ == "__main__":
     env = FourRoomsEnv(size=9)
     env.reset(seed=42)
+
+    for _ in range(100):  # Run for 100 steps as an example
+        action = env.action_space.sample()  # Take a random action
+        obs, reward, done, info, _ = env.step(action)
+        env.render()  # Render the environment to visualize it
+        if done:
+            env.reset()  # Reset the environment if done

@@ -13,7 +13,6 @@ from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
 
-
 # Parse arguments
 parser = argparse.ArgumentParser()
 
@@ -29,7 +28,10 @@ parser.add_argument("--save-interval",
                     help="number of updates between two saves (default: 10, 0 means no saving)")
 parser.add_argument("--procs", type=int, default=16, help="number of processes (default: 16)")
 parser.add_argument("--frames", type=int, default=10**7, help="number of frames of training (default: 1e7)")
-parser.add_argument("--obs-size", type=int, default=7, help="size of observation for environment, should be an odd number (default: 7)")
+parser.add_argument("--obs-size",
+                    type=int,
+                    default=7,
+                    help="size of observation for environment, should be an odd number (default: 7)")
 
 # Parameters for main algorithm
 parser.add_argument("--epochs", type=int, default=4, help="number of epochs for PPO (default: 4)")
@@ -70,8 +72,14 @@ parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperat
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
 parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
 parser.add_argument("--use-planner", action="store_true", default=False, help="uses a high level planner network")
-parser.add_argument("--use-position-bonus", action="store_true", default=False, help="uses a high level planner network")
-
+parser.add_argument("--use-position-bonus",
+                    action="store_true",
+                    default=False,
+                    help="uses a high level planner network")
+parser.add_argument("--custom-hw",
+                    default=19,
+                    type=int,
+                    help="customize the height and width of the Minigrid-FourRooms gridworld, h==w")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -81,7 +89,14 @@ if __name__ == "__main__":
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
     askevery_str = f"_askevery{args.ask_every}" if args.llm else ""
-    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_{args.llm if args.llm else 'Nollm'}{askevery_str}_seed{args.seed}_{date}"
+    append = f'_hw{args.custom_hw}' if args.env == 'FourRooms' else ''
+    ifllm = f'_llm{args.llm}' if args.llm else ''
+
+    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}{ifllm}{askevery_str}{append}_{date}"
+
+    print(
+        f"llm{args.llm}_traj{args.use_trajectory}_trajrdecay{args.traj_r_decay}_llmtemp{args.llm_temperature}_askgptprob{args.ask_gpt_prob}{askevery_str}_useplanner{args.use_planner}_useposbonus{args.use_position_bonus}"
+    )
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)
@@ -106,7 +121,7 @@ if __name__ == "__main__":
     for i in range(args.procs):
         if args.use_position_bonus:
             envs.append(utils.make_env_pos_bonus(args.env, args.seed + 10000 * i))
-        if 'MiniGrid-FourRooms' in args.env:
+        if args.env == 'FourRooms':
             envs.append(utils.make_four_rooms_env(args.seed + 10000 * i, size=9))
         else:
             envs.append(utils.make_env(args.env, args.seed + 10000 * i))
@@ -149,7 +164,8 @@ if __name__ == "__main__":
         if args.llm is not None and args.use_trajectory:
             reshape_reward = LLMRewardFunction(query_interval=args.ask_every,
                                                decay=args.traj_r_decay,
-                                               llm_temperature=args.llm_temperature,llm=args.llm).reshape_reward
+                                               llm_temperature=args.llm_temperature,
+                                               llm=args.llm).reshape_reward
         elif args.llm is not None:
             reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob,
                                                ask_every=args.ask_every).reshape_reward
