@@ -28,10 +28,11 @@ parser.add_argument("--save-interval",
                     help="number of updates between two saves (default: 10, 0 means no saving)")
 parser.add_argument("--procs", type=int, default=16, help="number of processes (default: 16)")
 parser.add_argument("--frames", type=int, default=10**7, help="number of frames of training (default: 1e7)")
+parser.add_argument("--obs-size", type=int, default=7, help="size of observation for environment, should be an odd number (default: 7)")
 
 # Parameters for main algorithm
 parser.add_argument("--epochs", type=int, default=4, help="number of epochs for PPO (default: 4)")
-parser.add_argument("--batch-size", type=int, default=256, help="batch size for PPO (default: 256)")
+parser.add_argument("--batch-size", type=int, default=1280, help="batch size for PPO (default: 1280)")
 parser.add_argument("--frames-per-proc",
                     type=int,
                     default=None,
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     # Load environments
     envs = []
     for i in range(args.procs):
-        envs.append(utils.make_env(args.env, args.seed + 10000 * i))
+        envs.append(utils.make_env(args.env, seed=args.seed + 10000 * i, obs_size=args.obs_size))
     txt_logger.info("Environments loaded\n")
 
     # Load training status
