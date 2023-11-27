@@ -13,6 +13,7 @@ from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
 
+
 # Parse arguments
 parser = argparse.ArgumentParser()
 
@@ -68,6 +69,7 @@ parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperat
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
 parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
 parser.add_argument("--use-planner", action="store_true", default=False, help="uses a high level planner network")
+parser.add_argument("--use-position-bonus", action="store_true", default=False, help="uses a high level planner network")
 
 
 if __name__ == "__main__":
@@ -78,7 +80,7 @@ if __name__ == "__main__":
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
     askevery_str = f"_askevery{args.ask_every}" if args.llm else ""
-    default_model_name = f"{args.env}_{args.algo}_{args.llm if args.llm else 'Nollm'}{askevery_str}_seed{args.seed}_{date}"
+    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_{args.llm if args.llm else 'Nollm'}{askevery_str}_seed{args.seed}_{date}"
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)
@@ -101,7 +103,12 @@ if __name__ == "__main__":
     # Load environments
     envs = []
     for i in range(args.procs):
-        envs.append(utils.make_env(args.env, args.seed + 10000 * i))
+        if args.use_position_bonus:
+            envs.append(utils.make_env_pos_bonus(args.env, args.seed + 10000 * i))
+        if 'MiniGrid-FourRooms' in args.env:
+            envs.append(utils.make_four_rooms_env(args.seed + 10000 * i, size=9))
+        else:
+            envs.append(utils.make_env(args.env, args.seed + 10000 * i))
     txt_logger.info("Environments loaded\n")
 
     # Load training status
