@@ -12,6 +12,7 @@ from model import ACModel
 from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
+from minigrid.wrappers import PositionBonus
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -68,6 +69,7 @@ parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperat
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
 parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
 parser.add_argument("--use-planner", action="store_true", default=False, help="uses a high level planner network")
+parser.add_argument("--use_pos_reward", action="store_true", default=False, help="uses position reward")
 
 
 if __name__ == "__main__":
@@ -101,7 +103,10 @@ if __name__ == "__main__":
     # Load environments
     envs = []
     for i in range(args.procs):
-        envs.append(utils.make_env(args.env, args.seed + 10000 * i))
+        env = utils.make_env(args.env, args.seed + 10000 * i)
+        if args.use_pos_reward:
+            env = PositionBonus(env)
+        envs.append(env)
     txt_logger.info("Environments loaded\n")
 
     # Load training status
