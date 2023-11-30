@@ -125,7 +125,7 @@ if __name__ == "__main__":
         if args.env == 'FourRooms':
             envs.append(utils.make_four_rooms_env(args.seed + 10000 * i, size=9))
         else:
-            envs.append(utils.make_env(args.env, args.seed + 10000 * i))
+            envs.append(utils.make_env(args.env, args.seed + 10000 * i, obs_size=args.obs_size))
     txt_logger.info("Environments loaded\n")
 
     # Load training status
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     # Load model
     if args.use_planner:
-        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, args.mem, args.text)
+        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, use_memory=args.mem, use_text=args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
@@ -172,10 +172,9 @@ if __name__ == "__main__":
                                                ask_every=args.ask_every).reshape_reward
         else:
             reshape_reward = None
-        algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
-                                args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
-                                args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
-                                reshape_reward)
+        algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
+        args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
+        reshape_reward)
     else:
         raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
