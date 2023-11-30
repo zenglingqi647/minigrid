@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from pathlib import Path
 from model import ACModel
-from .textual_minigrid import gpt_planning_prob
+from .textual_minigrid import gpt_skill_planning
 from .format import Vocabulary
 import torch_ac
 
@@ -44,7 +44,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ac_models = nn.ModuleList()
         self.timer = 0
         self.ask_cooldown = ask_cooldown
-        self.distr = torch.distributions.Categorical(torch.ones(num_skills) / num_skills)
+        self.current_skill : int = 0
         self.vocab : Vocabulary = vocab
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
@@ -74,20 +74,20 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             obs_img : torch.Tensor = obs.image[idx]
             mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
             try:
-                p = torch.Tensor(gpt_planning_prob(obs_img.cpu().numpy(), mission_txt))
+                skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
             except Exception as e:
-                p = torch.ones(size=(self.num_skills,))
-            print(f"Skill planning outcome: {p} ")
-            self.distr = torch.distributions.Categorical(probs=p)
+                skill_num = torch.randint(0, len(self.ac_models)).item()
+            print(f"Skill planning outcome: {skill_num} ")
+            self.current_skill = skill_num
             self.timer = self.ask_cooldown
         else:
             self.timer -= 1
-        return self.distr
+        return self.current_skill
 
     def forward(self, obs, memory):
         # for network in self.ac_models:
         #     network.zero_grad()
-        skill_network_idx = self.get_skill_distr(obs, memory).sample().item()
+        skill_network_idx = self.get_skill_distr(obs, memory)
         result = self.ac_models[skill_network_idx](obs, memory)
         for j in range(len(self.ac_models)):
             if j != skill_network_idx:

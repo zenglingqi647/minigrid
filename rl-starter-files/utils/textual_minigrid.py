@@ -56,24 +56,24 @@ def get_planning_prompt_str(obs_img, mission_txt):
     image, mission = img_to_str(obs_img), mission_txt
     return f'''You are an agent in a Minigrid environment. Your mission is {mission}. Your agent can only see in front of itself. It cannot see blocked objects. Here is the vision of your agent: {image}
 You have the following skills at your disposal:
-Skill 1: Go to Object in the same room
-Skill 2: Open door in the same room
-Skill 3: Pickup an item in the same room
-Skill 4: Put an item next to an item in the same room
-Skill 5: Unlock a door in the same room
-Skill 6: Find an object in a random room
-Skill 7: Go to an object in a random room
+Skill 0: Go to Object in the same room
+Skill 1: Open door in the same room
+Skill 2: Pickup an item in the same room
+Skill 3: Put an item next to an item in the same room
+Skill 4: Unlock a door in the same room
+Skill 5: Find an object in a random room
+Skill 6: Go to an object in a random room
 
-In your response, generate a probability vector for using each of the skills, in a list of decimal numbers, comma-separated and enclosed by square brackets. You may add an explanation in no more than 50 words, but you must include the string "answer: [your answer]" in the beginning of your response. The probabilities must sum to 1.
+Based on the skills, determine which skill is the most appropriate to use. Use the format "Answer: Skill [a number from 0 to 6]". Do not say anything else.
 '''
 
-def gpt_planning_prob(obs, mission_txt):
+def gpt_skill_planning(obs, mission_txt):
     prompt = get_planning_prompt_str(obs, mission_txt)
     response = interact_with_gpt(prompt)
-    match = re.search(r'\[([^]]*)\]', response)
+    match = re.search(r'Answer: Skill (\d)', response)
     if match:
-        probability_vector = [float(num) for num in match.group(1).split(',')]
-    return probability_vector
+        skill = int(match.group(1))
+    return skill
 
 
 class GPTRewardFunction():
