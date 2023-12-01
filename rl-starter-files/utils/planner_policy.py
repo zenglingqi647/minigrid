@@ -76,7 +76,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             try:
                 skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
             except Exception as e:
-                skill_num = torch.randint(0, len(self.ac_models)).item()
+                skill_num = torch.randint(0, len(self.ac_models), size=1).item()
             print(f"Skill planning outcome: {skill_num} ")
             self.current_skill = skill_num
             self.timer = self.ask_cooldown
