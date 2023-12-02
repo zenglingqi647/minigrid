@@ -75,9 +75,10 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
             try:
                 skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                print(f"Skill planning outcome: {skill_num} ")
             except Exception as e:
-                skill_num = torch.randint(0, len(self.ac_models), size=1).item()
-            print(f"Skill planning outcome: {skill_num} ")
+                skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
+                print(f"Planning failed, randomly generated {skill_num} ")
             self.current_skill = skill_num
             self.timer = self.ask_cooldown
         else:
