@@ -4,6 +4,7 @@ import gymnasium as gym
 from minigrid.core.constants import *
 import matplotlib.pyplot as plt
 from .gpt_interface import *
+from .llama_interface import *
 import random
 import re
 
@@ -75,6 +76,13 @@ def gpt_skill_planning(obs, mission_txt):
         skill = int(match.group(1))
     return skill
 
+def llama_skill_planning(obs, mission_txt):
+    prompt = get_planning_prompt_str(obs, mission_txt)
+    response = interact_with_llama(prompt)
+    match = re.search(r'Answer: Skill (\d)', response)
+    if match:
+        skill = int(match.group(1))
+    return skill
 
 class GPTRewardFunction():
     def __init__(self, query_gpt_prob, ask_every, gpt_prob_decay=1):
