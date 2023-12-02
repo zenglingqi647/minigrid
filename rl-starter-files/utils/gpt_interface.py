@@ -11,7 +11,8 @@ def interact_with_gpt(prompt):
       messages=[
         {"role": "system", "content": "You are a helpful virtual assistant who follows the user's instructions."},
         {"role": "user", "content": prompt}
-      ]
+      ],
+      request_timeout=10
     )
     return output.choices[0].message['content']
 

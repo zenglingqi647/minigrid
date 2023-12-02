@@ -13,13 +13,10 @@ python -m scripts.train --algo ppo --env BabyAI-PickupDist-v0 --text --frames 30
 python -m scripts.train --algo ppo --env BabyAI-PutNextLocalS5N3-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11
 
 # Skill 5: Unlock a door (in the same room)
-python -m scripts.train --algo ppo --env BabyAI-UnlockLocal-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11
+python -m scripts.train --algo ppo --env BabyAI-UnlockLocal-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11 --seed 2
 
 # Skill 6: Find an object (in a random room)
 python -m scripts.train --algo ppo --env BabyAI-FindObjS5-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11
 
 # Skill 7: Go to the green object (in a random room)
 python -m scripts.train --algo ppo --env MiniGrid-FourRooms-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11
-
-# Skill 8: Also Four Rooms
-python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15   --procs 64 --frames-per-proc 40 --obs-size 11
