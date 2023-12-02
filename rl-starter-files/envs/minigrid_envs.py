@@ -6,8 +6,9 @@ Code borrowed from:
 https://github.com/swan-utokyo/deir
 """
 
-from gym_minigrid.envs import DoorKeyEnv
-from gym_minigrid.minigrid import MiniGridEnv, Grid, Goal, Door, Key, Wall, COLOR_NAMES, DIR_TO_VEC, Ball, Box
+from minigrid.envs.doorkey import DoorKeyEnv
+from minigrid.minigrid_env import MiniGridEnv, Grid, Door, Key, Wall, COLOR_NAMES, DIR_TO_VEC, Ball, Box
+from minigrid.core.world_object import Goal
 from gym_minigrid.register import register
 from gym_minigrid.roomgrid import RoomGrid
 
@@ -45,11 +46,7 @@ class CustomDoorKeyEnv(MiniGridEnv):
         self.put_obj(Door('yellow', is_locked=True), splitIdx, doorIdx)
 
         # Place a yellow key on the left side
-        self.place_obj(
-            obj=Key('yellow'),
-            top=(0, 0),
-            size=(splitIdx, height)
-        )
+        self.place_obj(obj=Key('yellow'), top=(0, 0), size=(splitIdx, height))
 
         self.mission = "use the key to open the door and then get to the goal"
 
@@ -60,72 +57,75 @@ class CustomDoorKeyEnv(MiniGridEnv):
 
 
 class DoorKeyEnv8x8ViewSize9x9(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=8, agent_view_size=9)
 
+
 class DoorKeyEnv8x8ViewSize5x5(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=8, agent_view_size=5)
 
+
 class DoorKeyEnv8x8ViewSize3x3(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=8, agent_view_size=3)
 
+
 class DoorKeyEnv16x16ViewSize9x9(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=16, agent_view_size=9)
 
+
 class DoorKeyEnv16x16ViewSize5x5(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=16, agent_view_size=5)
 
+
 class DoorKeyEnv16x16ViewSize3x3(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=16, agent_view_size=3)
 
+
 class DoorKeyEnv32x32ViewSize9x9(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=32, agent_view_size=9)
 
+
 class DoorKeyEnv32x32ViewSize5x5(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=32, agent_view_size=5)
 
+
 class DoorKeyEnv32x32ViewSize3x3(CustomDoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=32, agent_view_size=3)
 
+
 class DoorKeyEnv32x32(DoorKeyEnv):
+
     def __init__(self):
         super().__init__(size=32)
 
-register(
-    id='MiniGrid-DoorKey-8x8-ViewSize-9x9-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize9x9'
-)
-register(
-    id='MiniGrid-DoorKey-8x8-ViewSize-5x5-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize5x5'
-)
-register(
-    id='MiniGrid-DoorKey-8x8-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize3x3'
-)
-register(
-    id='MiniGrid-DoorKey-16x16-ViewSize-9x9-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv16x16ViewSize9x9'
-)
-register(
-    id='MiniGrid-DoorKey-16x16-ViewSize-5x5-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv16x16ViewSize5x5'
-)
-register(
-    id='MiniGrid-DoorKey-32x32-v0',
-    entry_point='src.env.minigrid_envs:DoorKeyEnv32x32'
-)
+
+register(id='MiniGrid-DoorKey-8x8-ViewSize-9x9-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize9x9')
+register(id='MiniGrid-DoorKey-8x8-ViewSize-5x5-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize5x5')
+register(id='MiniGrid-DoorKey-8x8-ViewSize-3x3-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv8x8ViewSize3x3')
+register(id='MiniGrid-DoorKey-16x16-ViewSize-9x9-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv16x16ViewSize9x9')
+register(id='MiniGrid-DoorKey-16x16-ViewSize-5x5-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv16x16ViewSize5x5')
+register(id='MiniGrid-DoorKey-32x32-v0', entry_point='src.env.minigrid_envs:DoorKeyEnv32x32')
 
 
 class CustomKeyCorridor(RoomGrid):
+
     def __init__(
         self,
         num_rows=3,
@@ -139,7 +139,7 @@ class CustomKeyCorridor(RoomGrid):
         super().__init__(
             room_size=room_size,
             num_rows=num_rows,
-            max_steps=30*room_size**2,
+            max_steps=30 * room_size**2,
             seed=seed,
             agent_view_size=agent_view_size,
         )
@@ -181,6 +181,7 @@ class CustomKeyCorridor(RoomGrid):
 
 
 class KeyCorridorS6R3V5(CustomKeyCorridor):
+
     def __init__(self, seed=None):
         super().__init__(
             room_size=6,
@@ -188,7 +189,10 @@ class KeyCorridorS6R3V5(CustomKeyCorridor):
             seed=seed,
             agent_view_size=5,
         )
+
+
 class KeyCorridorS6R3V3(CustomKeyCorridor):
+
     def __init__(self, seed=None):
         super().__init__(
             room_size=6,
@@ -196,7 +200,10 @@ class KeyCorridorS6R3V3(CustomKeyCorridor):
             seed=seed,
             agent_view_size=3,
         )
+
+
 class KeyCorridorS8R4(CustomKeyCorridor):
+
     def __init__(self, seed=None):
         super().__init__(
             room_size=8,
@@ -204,7 +211,10 @@ class KeyCorridorS8R4(CustomKeyCorridor):
             seed=seed,
             agent_view_size=7,
         )
+
+
 class KeyCorridorS10R5(CustomKeyCorridor):
+
     def __init__(self, seed=None):
         super().__init__(
             room_size=10,
@@ -212,7 +222,10 @@ class KeyCorridorS10R5(CustomKeyCorridor):
             seed=seed,
             agent_view_size=7,
         )
+
+
 class KeyCorridorS12R6(CustomKeyCorridor):
+
     def __init__(self, seed=None):
         super().__init__(
             room_size=12,
@@ -222,26 +235,11 @@ class KeyCorridorS12R6(CustomKeyCorridor):
         )
 
 
-register(
-    id='MiniGrid-KeyCorridorS6R3V5-v0',
-    entry_point='src.env.minigrid_envs:KeyCorridorS6R3V5'
-)
-register(
-    id='MiniGrid-KeyCorridorS6R3V3-v0',
-    entry_point='src.env.minigrid_envs:KeyCorridorS6R3V3'
-)
-register(
-    id='MiniGrid-KeyCorridorS8R4-v0',
-    entry_point='src.env.minigrid_envs:KeyCorridorS8R4'
-)
-register(
-    id='MiniGrid-KeyCorridorS10R5-v0',
-    entry_point='src.env.minigrid_envs:KeyCorridorS10R5'
-)
-register(
-    id='MiniGrid-KeyCorridorS12R6-v0',
-    entry_point='src.env.minigrid_envs:KeyCorridorS12R6'
-)
+register(id='MiniGrid-KeyCorridorS6R3V5-v0', entry_point='src.env.minigrid_envs:KeyCorridorS6R3V5')
+register(id='MiniGrid-KeyCorridorS6R3V3-v0', entry_point='src.env.minigrid_envs:KeyCorridorS6R3V3')
+register(id='MiniGrid-KeyCorridorS8R4-v0', entry_point='src.env.minigrid_envs:KeyCorridorS8R4')
+register(id='MiniGrid-KeyCorridorS10R5-v0', entry_point='src.env.minigrid_envs:KeyCorridorS10R5')
+register(id='MiniGrid-KeyCorridorS12R6-v0', entry_point='src.env.minigrid_envs:KeyCorridorS12R6')
 
 
 class CustomFourRooms(MiniGridEnv):
@@ -307,38 +305,36 @@ class CustomFourRooms(MiniGridEnv):
         obs, reward, done, info = MiniGridEnv.step(self, action)
         return obs, reward, done, info
 
+
 class FourRoomsViewSize5x5(CustomFourRooms):
+
     def __init__(self):
         super().__init__(agent_view_size=5)
 
+
 class FourRoomsViewSize3x3(CustomFourRooms):
+
     def __init__(self):
         super().__init__(agent_view_size=3)
 
-register(
-    id="MiniGrid-FourRooms-ViewSize-5x5-v0",
-    entry_point="src.env.minigrid_envs:FourRoomsViewSize5x5"
-)
-register(
-    id="MiniGrid-FourRooms-ViewSize-3x3-v0",
-    entry_point="src.env.minigrid_envs:FourRoomsViewSize3x3"
-)
+
+register(id="MiniGrid-FourRooms-ViewSize-5x5-v0", entry_point="src.env.minigrid_envs:FourRoomsViewSize5x5")
+register(id="MiniGrid-FourRooms-ViewSize-3x3-v0", entry_point="src.env.minigrid_envs:FourRoomsViewSize3x3")
 
 
 class MultiRoom:
-    def __init__(self,
-        top,
-        size,
-        entryDoorPos,
-        exitDoorPos
-    ):
+
+    def __init__(self, top, size, entryDoorPos, exitDoorPos):
         self.top = top
         self.size = size
         self.entryDoorPos = entryDoorPos
         self.exitDoorPos = exitDoorPos
 
+
 class CustomMultiRoomEnv(MiniGridEnv):
-    def __init__(self,
+
+    def __init__(
+        self,
         minNumRooms,
         maxNumRooms,
         maxRoomSize=10,
@@ -358,35 +354,28 @@ class CustomMultiRoomEnv(MiniGridEnv):
 
         self.rooms = []
 
-        super(CustomMultiRoomEnv, self).__init__(
-            grid_size=grid_size,
-            max_steps=self.maxNumRooms * 20 if max_steps is None else max_steps,
-            agent_view_size=agent_view_size
-        )
+        super(CustomMultiRoomEnv, self).__init__(grid_size=grid_size,
+                                                 max_steps=self.maxNumRooms * 20 if max_steps is None else max_steps,
+                                                 agent_view_size=agent_view_size)
 
     def _gen_grid(self, width, height):
         roomList = []
 
         # Choose a random number of rooms to generate
-        numRooms = self._rand_int(self.minNumRooms, self.maxNumRooms+1)
+        numRooms = self._rand_int(self.minNumRooms, self.maxNumRooms + 1)
 
         while len(roomList) < numRooms:
             curRoomList = []
 
-            entryDoorPos = (
-                self._rand_int(0, width - 2),
-                self._rand_int(0, width - 2)
-            )
+            entryDoorPos = (self._rand_int(0, width - 2), self._rand_int(0, width - 2))
 
             # Recursively place the rooms
-            self._placeRoom(
-                numRooms,
-                roomList=curRoomList,
-                minSz=4,
-                maxSz=self.maxRoomSize,
-                entryDoorWall=2,
-                entryDoorPos=entryDoorPos
-            )
+            self._placeRoom(numRooms,
+                            roomList=curRoomList,
+                            minSz=4,
+                            maxSz=self.maxRoomSize,
+                            entryDoorWall=2,
+                            entryDoorPos=entryDoorPos)
 
             if len(curRoomList) > len(roomList):
                 roomList = curRoomList
@@ -431,7 +420,7 @@ class CustomMultiRoomEnv(MiniGridEnv):
                 self.grid.set(*room.entryDoorPos, entryDoor)
                 prevDoorColor = doorColor
 
-                prevRoom = roomList[idx-1]
+                prevRoom = roomList[idx - 1]
                 prevRoom.exitDoorPos = room.entryDoorPos
 
         # Randomize the starting agent position and direction
@@ -442,18 +431,10 @@ class CustomMultiRoomEnv(MiniGridEnv):
 
         self.mission = 'traverse the rooms to get to the goal'
 
-    def _placeRoom(
-        self,
-        numLeft,
-        roomList,
-        minSz,
-        maxSz,
-        entryDoorWall,
-        entryDoorPos
-    ):
+    def _placeRoom(self, numLeft, roomList, minSz, maxSz, entryDoorWall, entryDoorPos):
         # Choose the room size randomly
-        sizeX = self._rand_int(minSz, maxSz+1)
-        sizeY = self._rand_int(minSz, maxSz+1)
+        sizeX = self._rand_int(minSz, maxSz + 1)
+        sizeY = self._rand_int(minSz, maxSz + 1)
 
         # The first room will be at the door position
         if len(roomList) == 0:
@@ -499,12 +480,7 @@ class CustomMultiRoomEnv(MiniGridEnv):
                 return False
 
         # Add this room to the list
-        roomList.append(MultiRoom(
-            (topX, topY),
-            (sizeX, sizeY),
-            entryDoorPos,
-            None
-        ))
+        roomList.append(MultiRoom((topX, topY), (sizeX, sizeY), entryDoorPos, None))
 
         # If this was the last room, stop
         if numLeft == 1:
@@ -522,40 +498,26 @@ class CustomMultiRoomEnv(MiniGridEnv):
             # Pick the exit door position
             # Exit on right wall
             if exitDoorWall == 0:
-                exitDoorPos = (
-                    topX + sizeX - 1,
-                    topY + self._rand_int(1, sizeY - 1)
-                )
+                exitDoorPos = (topX + sizeX - 1, topY + self._rand_int(1, sizeY - 1))
             # Exit on south wall
             elif exitDoorWall == 1:
-                exitDoorPos = (
-                    topX + self._rand_int(1, sizeX - 1),
-                    topY + sizeY - 1
-                )
+                exitDoorPos = (topX + self._rand_int(1, sizeX - 1), topY + sizeY - 1)
             # Exit on left wall
             elif exitDoorWall == 2:
-                exitDoorPos = (
-                    topX,
-                    topY + self._rand_int(1, sizeY - 1)
-                )
+                exitDoorPos = (topX, topY + self._rand_int(1, sizeY - 1))
             # Exit on north wall
             elif exitDoorWall == 3:
-                exitDoorPos = (
-                    topX + self._rand_int(1, sizeX - 1),
-                    topY
-                )
+                exitDoorPos = (topX + self._rand_int(1, sizeX - 1), topY)
             else:
                 assert False
 
             # Recursively create the other rooms
-            success = self._placeRoom(
-                numLeft - 1,
-                roomList=roomList,
-                minSz=minSz,
-                maxSz=maxSz,
-                entryDoorWall=nextEntryWall,
-                entryDoorPos=exitDoorPos
-            )
+            success = self._placeRoom(numLeft - 1,
+                                      roomList=roomList,
+                                      minSz=minSz,
+                                      maxSz=maxSz,
+                                      entryDoorWall=nextEntryWall,
+                                      entryDoorPos=exitDoorPos)
 
             if success:
                 break
@@ -567,21 +529,29 @@ class CustomMultiRoomEnv(MiniGridEnv):
             return 1
         return 1 - 0.9 * (self.step_count / self.max_steps)
 
+
 class MultiRoomEnvN12(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
             maxNumRooms=12,
             agent_view_size=7,
         )
+
+
 class MultiRoomEnvN12V3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
             maxNumRooms=12,
             agent_view_size=3,
         )
+
+
 class MultiRoomEnvN12MaxSteps1k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -589,7 +559,10 @@ class MultiRoomEnvN12MaxSteps1k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=1000,
         )
+
+
 class MultiRoomEnvN12MaxSteps1kV3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -597,7 +570,10 @@ class MultiRoomEnvN12MaxSteps1kV3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=1000,
         )
+
+
 class MultiRoomEnvN12MaxSteps2k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -605,7 +581,10 @@ class MultiRoomEnvN12MaxSteps2k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=2000,
         )
+
+
 class MultiRoomEnvN12MaxSteps2kV3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -613,7 +592,10 @@ class MultiRoomEnvN12MaxSteps2kV3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=2000,
         )
+
+
 class MultiRoomEnvN12MaxSteps3k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -621,7 +603,10 @@ class MultiRoomEnvN12MaxSteps3k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=3000,
         )
+
+
 class MultiRoomEnvN12MaxSteps3kV3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -629,7 +614,10 @@ class MultiRoomEnvN12MaxSteps3kV3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=3000,
         )
+
+
 class MultiRoomEnvN12MaxSteps500(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -637,7 +625,10 @@ class MultiRoomEnvN12MaxSteps500(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=500,
         )
+
+
 class MultiRoomEnvN12MaxSteps500V3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -645,7 +636,10 @@ class MultiRoomEnvN12MaxSteps500V3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=500,
         )
+
+
 class MultiRoomEnvN12MaxSteps600(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -653,7 +647,10 @@ class MultiRoomEnvN12MaxSteps600(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=600,
         )
+
+
 class MultiRoomEnvN12MaxSteps600V3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -661,7 +658,10 @@ class MultiRoomEnvN12MaxSteps600V3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=600,
         )
+
+
 class MultiRoomEnvN12MaxSteps800(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -669,7 +669,10 @@ class MultiRoomEnvN12MaxSteps800(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=800,
         )
+
+
 class MultiRoomEnvN12MaxSteps800V3(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=12,
@@ -677,7 +680,10 @@ class MultiRoomEnvN12MaxSteps800V3(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=800,
         )
+
+
 class MultiRoomEnvN30MaxSteps1k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -686,7 +692,10 @@ class MultiRoomEnvN30MaxSteps1k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=1000,
         )
+
+
 class MultiRoomEnvN30MaxSteps2k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -695,7 +704,10 @@ class MultiRoomEnvN30MaxSteps2k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=2000,
         )
+
+
 class MultiRoomEnvN30MaxSteps3k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -704,7 +716,10 @@ class MultiRoomEnvN30MaxSteps3k(CustomMultiRoomEnv):
             agent_view_size=7,
             max_steps=3000,
         )
+
+
 class MultiRoomEnvN30VS3MS1k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -713,7 +728,10 @@ class MultiRoomEnvN30VS3MS1k(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=1000,
         )
+
+
 class MultiRoomEnvN30VS3MS2k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -722,7 +740,10 @@ class MultiRoomEnvN30VS3MS2k(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=2000,
         )
+
+
 class MultiRoomEnvN30VS3MS3k(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -731,7 +752,10 @@ class MultiRoomEnvN30VS3MS3k(CustomMultiRoomEnv):
             agent_view_size=3,
             max_steps=3000,
         )
+
+
 class MultiRoomEnvN30MS100NP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -741,7 +765,10 @@ class MultiRoomEnvN30MS100NP(CustomMultiRoomEnv):
             max_steps=100,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS300NP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -751,7 +778,10 @@ class MultiRoomEnvN30MS300NP(CustomMultiRoomEnv):
             max_steps=300,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS500NP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -761,7 +791,10 @@ class MultiRoomEnvN30MS500NP(CustomMultiRoomEnv):
             max_steps=500,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS1kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -771,7 +804,10 @@ class MultiRoomEnvN30MS1kNP(CustomMultiRoomEnv):
             max_steps=1000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS2kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -781,7 +817,10 @@ class MultiRoomEnvN30MS2kNP(CustomMultiRoomEnv):
             max_steps=2000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS3kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -791,7 +830,10 @@ class MultiRoomEnvN30MS3kNP(CustomMultiRoomEnv):
             max_steps=3000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS4kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -801,7 +843,10 @@ class MultiRoomEnvN30MS4kNP(CustomMultiRoomEnv):
             max_steps=4000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS5kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -811,7 +856,10 @@ class MultiRoomEnvN30MS5kNP(CustomMultiRoomEnv):
             max_steps=5000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS6kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -821,7 +869,10 @@ class MultiRoomEnvN30MS6kNP(CustomMultiRoomEnv):
             max_steps=6000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS7kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -831,7 +882,10 @@ class MultiRoomEnvN30MS7kNP(CustomMultiRoomEnv):
             max_steps=7000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS8kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -841,7 +895,10 @@ class MultiRoomEnvN30MS8kNP(CustomMultiRoomEnv):
             max_steps=8000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS9kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -851,7 +908,10 @@ class MultiRoomEnvN30MS9kNP(CustomMultiRoomEnv):
             max_steps=9000,
             disable_penalty=True,
         )
+
+
 class MultiRoomEnvN30MS10kNP(CustomMultiRoomEnv):
+
     def __init__(self):
         super().__init__(
             minNumRooms=30,
@@ -862,150 +922,67 @@ class MultiRoomEnvN30MS10kNP(CustomMultiRoomEnv):
             disable_penalty=True,
         )
 
-register(
-    id='MiniGrid-MultiRoom-N12-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12V3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps1k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps1k'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps1k-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps1kV3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps2k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps2k'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps2k-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps2kV3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps3k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps3k'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps3k-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps3kV3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps500-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps500'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps500-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps500V3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps600-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps600'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps600-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps600V3'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps800-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps800'
-)
-register(
-    id='MiniGrid-MultiRoom-N12-MaxSteps800-ViewSize-3x3-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps800V3'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps1k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps1k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps1k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS1k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps2k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps2k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps2k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS2k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps3k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps3k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps3k-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS3k'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps100-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS100NP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps300-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS300NP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps500-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS500NP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps1k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS1kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps2k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS2kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps3k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS3kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps4k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS4kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps5k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS5kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps6k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS6kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps7k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS7kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps8k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS8kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps9k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS9kNP'
-)
-register(
-    id='MiniGrid-MultiRoom-N30-MaxSteps10k-NoPenalty-v0',
-    entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS10kNP'
-)
+
+register(id='MiniGrid-MultiRoom-N12-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12')
+register(id='MiniGrid-MultiRoom-N12-ViewSize-3x3-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12V3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps1k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps1k')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps1k-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps1kV3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps2k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps2k')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps2k-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps2kV3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps3k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps3k')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps3k-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps3kV3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps500-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps500')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps500-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps500V3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps600-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps600')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps600-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps600V3')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps800-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps800')
+register(id='MiniGrid-MultiRoom-N12-MaxSteps800-ViewSize-3x3-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN12MaxSteps800V3')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps1k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps1k')
+register(id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps1k-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS1k')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps2k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps2k')
+register(id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps2k-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS2k')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps3k-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MaxSteps3k')
+register(id='MiniGrid-MultiRoom-N30-ViewSize3x3-MaxSteps3k-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30VS3MS3k')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps100-NoPenalty-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS100NP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps300-NoPenalty-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS300NP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps500-NoPenalty-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS500NP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps1k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS1kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps2k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS2kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps3k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS3kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps4k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS4kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps5k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS5kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps6k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS6kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps7k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS7kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps8k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS8kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps9k-NoPenalty-v0', entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS9kNP')
+register(id='MiniGrid-MultiRoom-N30-MaxSteps10k-NoPenalty-v0',
+         entry_point='src.env.minigrid_envs:MultiRoomEnvN30MS10kNP')
 
 
 class CustomObstructedMazeEnv(RoomGrid):
-    def __init__(self,
-                 num_rows,
-                 num_cols,
-                 num_rooms_visited,
-                 seed=None,
-                 agent_view_size=7,
-                 ):
+
+    def __init__(
+        self,
+        num_rows,
+        num_cols,
+        num_rooms_visited,
+        seed=None,
+        agent_view_size=7,
+    ):
         room_size = 6
-        max_steps = 4 * num_rooms_visited * room_size ** 2
+        max_steps = 4 * num_rooms_visited * room_size**2
 
         super().__init__(
             room_size=room_size,
@@ -1063,6 +1040,7 @@ class CustomObstructedMazeEnv(RoomGrid):
 
         return door, door_pos
 
+
 class ObstructedMaze_Full_V3(CustomObstructedMazeEnv):
     """
     A blue ball is hidden in one of the 4 corners of a 3x3 maze. Doors
@@ -1070,8 +1048,14 @@ class ObstructedMaze_Full_V3(CustomObstructedMazeEnv):
     boxes.
     """
 
-    def __init__(self, agent_room=(1, 1), key_in_box=True, blocked=True,
-                 num_quarters=4, num_rooms_visited=25, seed=None, agent_view_size=3):
+    def __init__(self,
+                 agent_room=(1, 1),
+                 key_in_box=True,
+                 blocked=True,
+                 num_quarters=4,
+                 num_rooms_visited=25,
+                 seed=None,
+                 agent_view_size=3):
         self.agent_room = agent_room
         self.key_in_box = key_in_box
         self.blocked = blocked
@@ -1100,9 +1084,10 @@ class ObstructedMaze_Full_V3(CustomObstructedMazeEnv):
 
             for k in [-1, 1]:
                 # Add a door to each side of the side room
-                self.add_door(*side_room, locked=True,
-                              door_idx=(i+k)%4,
-                              color=self.door_colors[(i+k)%len(self.door_colors)],
+                self.add_door(*side_room,
+                              locked=True,
+                              door_idx=(i + k) % 4,
+                              color=self.door_colors[(i + k) % len(self.door_colors)],
                               key_in_box=self.key_in_box,
                               blocked=self.blocked)
 
@@ -1112,7 +1097,5 @@ class ObstructedMaze_Full_V3(CustomObstructedMazeEnv):
         self.obj, _ = self.add_object(*ball_room, "ball", color=self.ball_to_find_color)
         self.place_agent(*self.agent_room)
 
-register(
-    id="MiniGrid-ObstructedMaze-Full-V3-v0",
-    entry_point="src.env.minigrid_envs:ObstructedMaze_Full_V3"
-)
+
+register(id="MiniGrid-ObstructedMaze-Full-V3-v0", entry_point="src.env.minigrid_envs:ObstructedMaze_Full_V3")
