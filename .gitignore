@@ -8,3 +8,4 @@ rl-starter-files/evaluate/
 rl-starter-files/log/
 model/
 llama/llama-2-*-chat
+scripts/setup.sh
