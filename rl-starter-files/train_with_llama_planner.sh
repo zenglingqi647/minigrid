@@ -14,6 +14,7 @@
 #
 # Number of tasks (one for each GPU desired for use case) (example):
 #SBATCH --ntasks=1
+#SBATCH --qos=v100_gpu3_normal
 #
 # Processors per task:
 # Always at least twice the number of GPUs (savio2_gpu and GTX2080TI in savio3_gpu)
