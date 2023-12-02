@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from pathlib import Path
 from model import ACModel
-from .textual_minigrid import gpt_skill_planning
+from .textual_minigrid import gpt_skill_planning, llama_skill_planning
 from .format import Vocabulary
 import torch_ac
 
@@ -20,7 +20,7 @@ SKILL_MDL_PATH = [
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
 
     
-    def __init__(self, obs_space, action_space, vocab, use_memory=False, use_text=False, num_skills=7, ask_cooldown=200):
+    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown,use_memory=False, use_text=False, num_skills=7):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
@@ -46,6 +46,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ask_cooldown = ask_cooldown
         self.current_skill : int = 0
         self.vocab : Vocabulary = vocab
+        self.llm_variant = "gpt" if llm_variant is None else llm_variant
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
 
@@ -74,7 +75,10 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             obs_img : torch.Tensor = obs.image[idx]
             mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
             try:
-                skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                if self.llm_variant == "gpt":
+                    skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                elif self.llm_variant == "llama":
+                    skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
                 print(f"Skill planning outcome: {skill_num} ")
             except Exception as e:
                 skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()

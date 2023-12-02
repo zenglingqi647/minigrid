@@ -1,0 +1,2 @@
+# This is for training on windows with a small gpu.
+python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --use-planner --frames 1000000 --recurrence 20 --obs-size 11 --frames-per-proc 40 --procs 1 --batch-size 200 --ask-every 200 --llm gpt
