@@ -5,5 +5,6 @@ setup.sh
 rl-starter-files/storage
 ctrl.sh
 rl-starter-files/evaluate/
+rl-starter-files/log/
 model/
 llama/llama-2-*-chat

@@ -18,7 +18,7 @@ SKILL_MDL_PATH = [
 ]
 
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
-
+    '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
     def __init__(self, obs_space, action_space, vocab, use_memory=False, use_text=False, num_skills=7, ask_cooldown=200):
         super().__init__()
@@ -69,18 +69,22 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
 
     def get_skill_distr(self, obs, memory):
         if self.timer == 0:
+            
             invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
             idx = torch.randint(low=0, high=obs.image.shape[0], size=(1,)).item()
             obs_img : torch.Tensor = obs.image[idx]
             mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
+            
             try:
                 skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
                 print(f"Skill planning outcome: {skill_num} ")
             except Exception as e:
                 skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
                 print(f"Planning failed, randomly generated {skill_num} ")
+                
             self.current_skill = skill_num
             self.timer = self.ask_cooldown
+            
         else:
             self.timer -= 1
         return self.current_skill
