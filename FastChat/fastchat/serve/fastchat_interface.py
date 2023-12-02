@@ -130,14 +130,6 @@ def chat_loop(
             conv.set_system_message(conv_system_msg)
         return conv
 
-    def reload_conv(conv):
-        """
-        Reprints the conversation from the start.
-        """
-        for message in conv.messages[conv.offset:]:
-            chatio.prompt_for_output(message[0])
-            chatio.print_output(message[1])
-
     conv = None
 
     while True:
@@ -186,10 +178,8 @@ def chat_loop(
                 if conv.messages[-1][0] == conv.roles[0]:
                     conv.messages.pop()
 
-                reload_conv(conv)
 
-
-def main(args):
+def setup(args):
     if args.gpus:
         if len(args.gpus.split(",")) < args.num_gpus:
             raise ValueError(f"Larger --num-gpus ({args.num_gpus}) than --gpus {args.gpus}!")
@@ -212,10 +202,6 @@ def main(args):
             args.device = "cpu"
     else:
         xft_config = None
-    if args.style == "simple":
-        chatio = SimpleChatIO(args.multiline)
-    else:
-        raise ValueError(f"Invalid style for console: {args.style}")
     try:
         model, tokenizer = load_model(
             args.model_path,
@@ -240,25 +226,27 @@ def main(args):
             xft_config=xft_config,
             revision=args.revision,
         )
-        prompt = ""
-        # return model, tokenizer
-        chat_loop(
-            model,
-            tokenizer,
-            args.model_path,
-            args.device,
-            args.conv_template,
-            args.conv_system_msg,
-            args.temperature,
-            args.repetition_penalty,
-            args.max_new_tokens,
-            chatio,
-            judge_sent_end=args.judge_sent_end,
-            history=not args.no_history,
-            prompt=prompt,
-        )
+        return model, tokenizer
     except KeyboardInterrupt:
         print("exit...")
+
+
+def query(args, model, tokenizer, prompt, chatio):
+    chat_loop(
+        model,
+        tokenizer,
+        args.model_path,
+        args.device,
+        args.conv_template,
+        args.conv_system_msg,
+        args.temperature,
+        args.repetition_penalty,
+        args.max_new_tokens,
+        chatio,
+        judge_sent_end=args.judge_sent_end,
+        history=not args.no_history,
+        prompt=prompt,
+    )
 
 
 if __name__ == "__main__":
@@ -287,4 +275,8 @@ if __name__ == "__main__":
         help="Whether enable the correction logic that interrupts the output of sentences due to EOS.",
     )
     args = parser.parse_args()
-    main(args)
+
+    prompt = "hello world"
+    chatio = SimpleChatIO(args.multiline)
+    model, tokenizer = setup(args)
+    query(args, model, tokenizer, prompt, chatio)
