@@ -6,7 +6,7 @@
 #SBATCH --account=pc_dsdisc
 #
 # Partition:
-#SBATCH --partition=savio3_gpu
+#SBATCH --partition=savio2_gpu
 #
 #
 # Number of nodes:
@@ -14,7 +14,6 @@
 #
 # Number of tasks (one for each GPU desired for use case) (example):
 #SBATCH --ntasks=1
-#SBATCH --qos=v100_gpu3_normal
 #
 # Processors per task:
 # Always at least twice the number of GPUs (savio2_gpu and GTX2080TI in savio3_gpu)
@@ -23,7 +22,7 @@
 #SBATCH --cpus-per-task=4
 #
 #Number of GPUs, this can be in the format of "gpu:[1-4]", or "gpu:K80:[1-4] with the type included
-#SBATCH --gres=gpu:V100:1
+#SBATCH --gres=gpu:1
 #
 # Wall clock limit:
 #SBATCH --time=24:00:00
