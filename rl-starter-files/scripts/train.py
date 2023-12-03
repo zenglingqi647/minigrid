@@ -63,7 +63,7 @@ parser.add_argument(
 parser.add_argument("--text", action="store_true", default=False, help="add a GRU to the model to handle text input")
 
 # Parameters for LLM
-parser.add_argument("--llm", default=None, help="Use LLM to shape rewards. Possible values: 'gpt-3.5-turbo', 'gpt-4'")
+parser.add_argument("--llm-reward-variant", default=None, help="Use LLM to shape rewards. Possible values: 'gpt-3.5-turbo', 'gpt-4'")
 parser.add_argument("--use-trajectory",
                     action="store_true",
                     default=False,
@@ -72,7 +72,7 @@ parser.add_argument('--traj-r-decay', type=float, default=0.7, help='Decay facto
 parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperature for LLM reward')
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
 parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
-parser.add_argument("--use-planner", action="store_true", default=False, help="uses a high level planner network")
+parser.add_argument("--llm-planner-variant", type=str, default=None, help="LLM Planner Variant")
 parser.add_argument("--use-position-bonus",
                     action="store_true",
                     default=False,
@@ -89,14 +89,15 @@ if __name__ == "__main__":
 
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-    askevery_str = f"_askevery{args.ask_every}" if args.llm else ""
+    askevery_str = f"_askevery{args.ask_every}" if args.llm_reward_variant or args.llm_planner_variant else ""
     append = f'_hw{args.custom_hw}' if args.env == 'FourRooms' else ''
-    ifllm = f'_llm{args.llm}' if args.llm else ''
+    llm_reward_variant = f'_llm{args.llm_reward_variant}' if args.llm_reward_variant else ''
+    llm_planner_variant = f'_llmplanner{args.llm_planner_variant}' if args.llm_planner_variant else ''
 
-    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}{ifllm}{askevery_str}{append}_{date}"
+    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}{llm_reward_variant}{llm_planner_variant}{askevery_str}{append}_{date}"
 
     print(
-        f"llm{args.llm}_traj{args.use_trajectory}_trajrdecay{args.traj_r_decay}_llmtemp{args.llm_temperature}_askgptprob{args.ask_gpt_prob}{askevery_str}_useplanner{args.use_planner}_useposbonus{args.use_position_bonus}"
+        f"llm{args.llm_reward_variant}_{llm_planner_variant}_traj{args.use_trajectory}_trajrdecay{args.traj_r_decay}_llmtemp{args.llm_temperature}_askgptprob{args.ask_gpt_prob}{askevery_str}_useposbonus{args.use_position_bonus}"
     )
 
     model_name = args.model or default_model_name
@@ -142,8 +143,8 @@ if __name__ == "__main__":
     txt_logger.info("Observations preprocessor loaded")
 
     # Load model
-    if args.use_planner:
-        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm, ask_cooldown=args.ask_every, use_memory=args.mem, use_text=args.text)
+    if args.llm_planner_variant is not None:
+        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, use_memory=args.mem, use_text=args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
@@ -162,12 +163,12 @@ if __name__ == "__main__":
     elif args.algo == "ppo":
         if not args.frames_per_proc:
             args.frames_per_proc = 128
-        if args.llm is not None and args.use_trajectory:
+        if args.llm_reward_variant is not None and args.use_trajectory:
             reshape_reward = LLMRewardFunction(query_interval=args.ask_every,
                                                decay=args.traj_r_decay,
                                                llm_temperature=args.llm_temperature,
-                                               llm=args.llm).reshape_reward
-        elif args.llm is not None:
+                                               llm=args.llm_reward_variant).reshape_reward
+        elif args.llm_reward_variant is not None:
             reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob,
                                                ask_every=args.ask_every).reshape_reward
         else:

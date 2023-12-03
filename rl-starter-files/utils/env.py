@@ -1,6 +1,6 @@
 import gymnasium as gym
 from minigrid.wrappers import PositionBonus
-from customized_env.four_rooms import FourRoomsEnv
+from envs.four_rooms import FourRoomsEnv
 from minigrid.wrappers import FullyObsWrapper
 from minigrid.wrappers import ViewSizeWrapper
 

@@ -46,7 +46,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ask_cooldown = ask_cooldown
         self.current_skill : int = 0
         self.vocab : Vocabulary = vocab
-        self.llm_variant = "gpt" if llm_variant is None else llm_variant
+        self.llm_variant = llm_variant
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
 
