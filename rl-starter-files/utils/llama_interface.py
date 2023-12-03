@@ -22,3 +22,5 @@ def interact_with_llama(prompt):
     returned = pipe(input_str)
     return returned.replace(input_str, "")
 
+if __name__ == "__main__":
+    interact_with_llama("What is the capital of France?")
