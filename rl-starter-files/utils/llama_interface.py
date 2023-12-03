@@ -20,3 +20,6 @@ def interact_with_llama(prompt):
     input_str = f'''You are a helpful virtual assistant who gives polite and helpful answers to user question Question: {prompt} Answer:'''
     returned = pipe(input_str)
     return returned.replace(input_str, "")
+
+if __name__ == "__main__":
+    interact_with_llama("What is the capital of France?")
