@@ -1,4 +1,4 @@
-##!/bin/bash
+#!/bin/bash
 # Job name:
 #SBATCH --job-name=cs285_proj
 #
