@@ -84,7 +84,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 print(f"Skill planning outcome: {skill_num} ")
             except Exception as e:
                 skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
-                print(f"Planning failed, randomly generated {skill_num} ")
+                print(f"Planning failed, randomly generated {skill_num}. Here's the error message {str(e)}")
                 
             self.current_skill = skill_num
             self.timer = self.ask_cooldown
