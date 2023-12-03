@@ -29,4 +29,5 @@
 #SBATCH --time=24:00:00
 
 ## Command(s) to run:
+cd ../rl-starter-files
 python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --use-planner --llm llama --ask-every 5 --frames 1000000 --recurrence 20 --obs-size 11 --frames-per-proc 40 --procs 64 --batch-size 200 
