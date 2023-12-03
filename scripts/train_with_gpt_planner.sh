@@ -22,7 +22,7 @@
 #SBATCH --cpus-per-task=4
 #
 #Number of GPUs, this can be in the format of "gpu:[1-4]", or "gpu:K80:[1-4] with the type included
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:K80:1
 #
 # Wall clock limit:
 #SBATCH --time=24:00:00
