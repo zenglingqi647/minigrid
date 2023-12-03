@@ -28,5 +28,6 @@
 #SBATCH --time=24:00:00
 
 ## Command(s) to run:
+module load cuda/12.2
 cd ../rl-starter-files
-python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --llm-planner-variant gpt --frames 1000000 --recurrence 20 --obs-size 11 --frames-per-proc 40 --procs 1 --batch-size 200 --ask-every 500 
+python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --llm-planner-variant gpt --frames 1000000 --recurrence 20 --obs-size 11 --frames-per-proc 40 --procs 64 --batch-size 200 --ask-every 500 
