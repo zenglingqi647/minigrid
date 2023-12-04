@@ -5,22 +5,23 @@ from model import ACModel
 from .textual_minigrid import gpt_skill_planning, llama_skill_planning
 from .format import Vocabulary
 import torch_ac
+import threading
 
 
 SKILL_MDL_PATH = [
-    "storage\skill-model-v1\BabyAI-GoToObj-v0_ppo_Nollm_seed1_23-11-26-20-13-04",
-    "storage\skill-model-v1\BabyAI-OpenDoor-v0_ppo_Nollm_seed1_23-11-26-20-38-31",
-    "storage\skill-model-v1\BabyAI-PickupDist-v0_ppo_Nollm_seed1_23-11-26-21-02-46",
-    "storage\skill-model-v1\BabyAI-PutNextLocalS5N3-v0_ppo_Nollm_seed1_23-11-26-22-15-24",
-    "storage\skill-model-v1\BabyAI-UnlockLocal-v0_ppo_Nollm_seed2_23-11-27-03-01-30",
-    "storage\skill-model-v1\BabyAI-FindObjS5-v0_ppo_Nollm_seed1_23-11-27-02-54-00",
-    "storage\skill-model-v1\MiniGrid-FourRooms-v0_ppo_Nollm_seed1_23-11-27-04-41-55"
+    "storage/skill-model-v1/BabyAI-GoToObj-v0_ppo_Nollm_seed1_23-11-26-20-13-04",
+    "storage/skill-model-v1/BabyAI-OpenDoor-v0_ppo_Nollm_seed1_23-11-26-20-38-31",
+    "storage/skill-model-v1/BabyAI-PickupDist-v0_ppo_Nollm_seed1_23-11-26-21-02-46",
+    "storage/skill-model-v1/BabyAI-PutNextLocalS5N3-v0_ppo_Nollm_seed1_23-11-26-22-15-24",
+    "storage/skill-model-v1/BabyAI-UnlockLocal-v0_ppo_Nollm_seed2_23-11-27-03-01-30",
+    "storage/skill-model-v1/BabyAI-FindObjS5-v0_ppo_Nollm_seed1_23-11-27-02-54-00",
+    "storage/skill-model-v1/MiniGrid-FourRooms-v0_ppo_Nollm_seed1_23-11-27-04-41-55"
 ]
 
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown,use_memory=False, use_text=False, num_skills=7):
+    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, use_memory=False, use_text=False, num_skills=7):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
@@ -46,9 +47,11 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ask_cooldown = ask_cooldown
         self.current_skill : int = 0
         self.vocab : Vocabulary = vocab
-        self.llm_variant = "gpt" if llm_variant is None else llm_variant
+        self.llm_variant = llm_variant
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
+
+        self.lock = threading.Lock()
 
     @property
     def memory_size(self):
@@ -69,29 +72,29 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         return mdl
 
     def get_skill_distr(self, obs, memory):
-        if self.timer == 0:
-            
-            invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
-            idx = torch.randint(low=0, high=obs.image.shape[0], size=(1,)).item()
-            obs_img : torch.Tensor = obs.image[idx]
-            mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
-            
-            try:
-                if self.llm_variant == "gpt":
-                    skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                elif self.llm_variant == "llama":
-                    skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                print(f"Skill planning outcome: {skill_num} ")
-            except Exception as e:
-                skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
-                print(f"Planning failed, randomly generated {skill_num} ")
+        with self.lock:
+            if self.timer == 0:
+                invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
+                idx = torch.randint(low=0, high=obs.image.shape[0], size=(1,)).item()
+                obs_img : torch.Tensor = obs.image[idx]
+                mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
                 
-            self.current_skill = skill_num
-            self.timer = self.ask_cooldown
-            
-        else:
-            self.timer -= 1
-        return self.current_skill
+                try:
+                    if self.llm_variant == "gpt":
+                        skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                    elif self.llm_variant == "llama":
+                        skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                    print(f"Skill planning outcome: {skill_num} ")
+                except Exception as e:
+                    skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
+                    print(f"Planning failed, randomly generated {skill_num}. Here's the error message {str(e)}")
+                    
+                self.current_skill = skill_num
+                self.timer = self.ask_cooldown
+                
+            else:
+                self.timer -= 1
+            return self.current_skill
 
     def forward(self, obs, memory):
         # for network in self.ac_models:
