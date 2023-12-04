@@ -21,7 +21,7 @@ SKILL_MDL_PATH = [
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown,use_memory=False, use_text=False, num_skills=7):
+    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, use_memory=False, use_text=False, num_skills=7):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
