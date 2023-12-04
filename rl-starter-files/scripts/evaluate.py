@@ -28,6 +28,13 @@ parser.add_argument("--memory", action="store_true", default=False,
                     help="add a LSTM to the model")
 parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model")
+parser.add_argument("--llm-planner-variant", type=str, default=None, 
+                    help="Specify llm variant, leave empty for no llm")
+parser.add_argument("--ask-every", type=int, default=500, help="how often to ask the planner")
+parser.add_argument("--obs-size",
+                    type=int,
+                    default=7,
+                    help="size of observation for environment, should be an odd number (default: 7)")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -44,7 +51,7 @@ if __name__ == "__main__":
 
     envs = []
     for i in range(args.procs):
-        env = utils.make_env(args.env, args.seed + 10000 * i)
+        env = utils.make_env(args.env, args.seed + 10000 * i, obs_size=args.obs_size)
         envs.append(env)
     env = ParallelEnv(envs)
     print("Environments loaded\n")
@@ -54,7 +61,8 @@ if __name__ == "__main__":
     model_dir = utils.get_model_dir(args.model)
     agent = utils.Agent(env.observation_space, env.action_space, model_dir,
                         argmax=args.argmax, num_envs=args.procs,
-                        use_memory=args.memory, use_text=args.text)
+                        use_memory=args.memory, use_text=args.text,
+                        planner_variant=args.llm_planner_variant, ask_every=args.ask_every)
     print("Agent loaded\n")
 
     # Initialize logs
