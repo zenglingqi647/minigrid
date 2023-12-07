@@ -48,6 +48,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.current_skill : int = 0
         self.vocab : Vocabulary = vocab
         self.llm_variant = llm_variant
+        # load skill mmodel 
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
 
@@ -71,7 +72,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             p.requires_grad = True
         return mdl
 
-    def get_skill_distr(self, obs, memory):
+    def get_skill(self, obs, memory):
         with self.lock:
             if self.timer == 0:
                 invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
@@ -99,7 +100,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     def forward(self, obs, memory):
         # for network in self.ac_models:
         #     network.zero_grad()
-        skill_network_idx = self.get_skill_distr(obs, memory)
+        skill_network_idx = self.get_skill(obs, memory)
         result = self.ac_models[skill_network_idx](obs, memory)
         for j in range(len(self.ac_models)):
             if j != skill_network_idx:
@@ -107,6 +108,3 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 for p in model.parameters():
                     p.grad = torch.zeros_like(p)
         return result
-
-
-    

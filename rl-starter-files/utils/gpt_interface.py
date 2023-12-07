@@ -15,6 +15,3 @@ def interact_with_gpt(prompt):
       request_timeout=10
     )
     return output.choices[0].message['content']
-
-
-

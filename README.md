@@ -22,6 +22,17 @@ python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImp
 ```
 The problem is, an ask probability of 0.0005 is still very bad...It takes a really long time to train.
 
+# TODO
+### Baselines
+Basic: 
+> PPO, A2C only
+
+Exploration(?): 
+> RND: https://opendilab.github.io/DI-engine/12_policies/rnd.html
+> BeBold, NovelD: https://github.com/tianjunz/NovelD
+> Deir
+
+
 ### **Update**
 - Bash script of experiments of different babyai and minigrid environments can be found as `babyai.sh` and `minigrid.sh`.
 

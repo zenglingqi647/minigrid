@@ -26,5 +26,8 @@ python3 -m scripts.evaluate --env MiniGrid-DoorKey-5x5-v0 --model DoorKey
 
 
 
-MiniGrid-BlockedUnlockPickup all performs bad. The training return are almost all zero. LavaCrossing
-MiniGrid-DistShift1 and Minigrid-SimpleCrossing, a2c outperforms a2c with reshaped reward
+
+
+Train with llama
+cd ../rl-starter-files
+python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --text --frames 1000000 --recurrence 20 --obs-size 11 --frames-per-proc 40 --procs 64 --batch-size 200 --ask-every 500 
