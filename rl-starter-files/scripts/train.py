@@ -187,7 +187,7 @@ if __name__ == "__main__":
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
-    with tqdm(total=args.frames) as pbar:
+    with tqdm(initial=num_frames, total=args.frames) as pbar:
         while num_frames < args.frames:
             # Update model parameters
             update_start_time = time.time()
