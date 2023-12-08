@@ -49,6 +49,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.current_skill : list[int] = [0] * num_procs
         self.vocab : Vocabulary = vocab
         self.llm_variant = llm_variant
+        # load skill mmodel 
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
 

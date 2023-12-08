@@ -7,10 +7,10 @@ https://github.com/swan-utokyo/deir
 """
 
 from minigrid.envs.doorkey import DoorKeyEnv
-from minigrid.minigrid_env import MiniGridEnv, Grid, Door, Key, Wall, COLOR_NAMES, DIR_TO_VEC, Ball, Box
-from minigrid.core.world_object import Goal
-from gym_minigrid.register import register
-from gym_minigrid.roomgrid import RoomGrid
+from minigrid.minigrid_env import MiniGridEnv, Grid, COLOR_NAMES, DIR_TO_VEC
+from minigrid.core.world_object import Goal, Door, Key, Wall, Ball, Box
+from gymnasium.envs.registration  import register
+from minigrid.core.roomgrid import RoomGrid
 
 
 class CustomDoorKeyEnv(MiniGridEnv):
