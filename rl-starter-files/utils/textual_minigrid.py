@@ -5,6 +5,8 @@ from minigrid.core.constants import *
 import matplotlib.pyplot as plt
 from .gpt_interface import *
 from .llama_interface import *
+from .human_interface import *
+from .format import Vocabulary
 import random
 import re
 
@@ -85,6 +87,10 @@ def llama_skill_planning(obs, mission_txt):
     if match:
         skill = int(match.group(1))
     return skill
+
+def human_skill_planning():
+    skill_num, goal_text = interact_with_human()
+    return skill_num, goal_text
 
 class GPTRewardFunction():
     def __init__(self, query_gpt_prob, ask_every, gpt_prob_decay=1):

@@ -2,11 +2,12 @@ import torch.nn as nn
 import torch
 from pathlib import Path
 from model import ACModel
-from .textual_minigrid import gpt_skill_planning, llama_skill_planning
+from .textual_minigrid import gpt_skill_planning, llama_skill_planning, human_skill_planning
 from .format import Vocabulary
+from torch_ac.utils.dictlist import DictList
 import torch_ac
-import threading
 from torch.distributions import Categorical
+from .other import device
 
 
 SKILL_MDL_PATH = [
@@ -46,8 +47,14 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ac_models = nn.ModuleList()
         self.timer = 0
         self.ask_cooldown = ask_cooldown
-        self.current_skill : list[int] = [0] * num_procs
-        self.vocab : Vocabulary = vocab
+        self.num_envs = num_procs
+
+        self.current_skills : list[int] = [0] * self.num_envs
+        self.current_goals : list[int] = [None] * self.num_envs
+        self.skill_vocabs : list[Vocabulary] = [None] * self.num_skills
+        self.vocab : Vocabulary = vocab.vocab
+        self.invert_vocab : dict = {v: k for k, v in self.vocab.items()}
+        
         self.llm_variant = llm_variant
         # load skill mmodel 
         for i in range(num_skills):
@@ -67,71 +74,91 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         mdl = ACModel(self.obs_space, self.action_space, self.use_memory, self.use_text)
         p = Path(SKILL_MDL_PATH[index], "status.pt")
         with open(p, "rb") as f:
-            model_state = torch.load(f)['model_state']
+            status = torch.load(f)
+            model_state = status['model_state']
         mdl.load_state_dict(model_state)
+        vocab = Vocabulary(100)
+        vocab.load_vocab(status['vocab'])
+        self.skill_vocabs[index] = vocab
         for p in mdl.parameters():
             p.requires_grad = True
         return mdl
 
-    def get_skill(self, obs, memory):
-        # with self.lock:
-            if self.timer == 0:
-                invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
-                for idx in range(obs.image.shape[0]):
-                    obs_img : torch.Tensor = obs.image[idx]
-                    mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
-                    
-                    try:
-                        if self.llm_variant == "gpt":
-                            skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                        elif self.llm_variant == "llama":
-                            skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                        print(f"Skill planning outcome: {skill_num} ")
-                    except Exception as e:
-                        skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
-                        print(f"Planning failed, randomly generated {skill_num}. Here's the error message {str(e)}")
-                    self.current_skill[idx] = skill_num
-                self.timer = self.ask_cooldown
-            else:
-                self.timer -= 1
-            return self.current_skill
+    def get_skills_and_goals(self, obs):
+        '''
+            Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
+        '''
+        # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
+        assert (obs.image.shape[0] == self.num_envs)
+        assert (obs.text.shape[0] == self.num_envs)
 
-    def forward_small(self, obs, memory):
-        skill_network_idx = self.get_skill(obs, memory)
+        if self.timer == 0:
+
+            # Iterate over batches
+            for idx in range(obs.image.shape[0]):
+
+                # Extract the individual image and mission texts
+                obs_img : torch.Tensor = obs.image[idx]
+                mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
+                print(f"Mission text sent is {mission_txt}")
+
+                # Ask the LLM planner
+                try:
+                    if self.llm_variant == "gpt":
+                        skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                    elif self.llm_variant == "llama":
+                        skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                    elif self.llm_variant == "human":
+                        skill_num, goal_text = human_skill_planning()
+                    print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
+                except Exception as e:
+                    print(f"Planning failed with error {e}, using the old goal and current skill.")
+                    return self.current_skills, self.current_goals
+
+                # Store the skill numbers and goal tokens returned by the planner
+                self.current_skills[idx] = skill_num
+
+                goal_tokens = []
+                for s in goal_text.split():
+                    if s not in self.skill_vocabs[skill_num].vocab:
+                        print(f"Warning: unknown word {s} in mission text {goal_text}")
+                    goal_tokens.append(self.skill_vocabs[skill_num][s])
+                goal_tokens = torch.IntTensor(goal_tokens).to(device)
+                self.current_goals[idx] = goal_tokens
+            self.timer = self.ask_cooldown
+        else:
+            self.timer -= 1
+        return self.current_skills, self.current_goals
+
+    def forward(self, obs : DictList, memory):
+        # here, obs is a dictionary of batched images and batched text. The batch size is a integer multiple of the number of parallel environments.
+
         dist_logits, values, memories = [], [], []
-        for idx, skill_id in enumerate(skill_network_idx):
-            dist, value, mem = self.ac_models[skill_id](obs[idx:idx+1], memory[idx:idx+1])
-            dist_logits.append(dist.logits)
-            values.append(value)
-            memories.append(mem)
+        # In each iteration of this loop, we need to extract one step of observations from all parallel environments, and ask get_skill.
+        for i in range(0, len(obs), self.num_envs):
+            obs_one_step = obs[i:i + self.num_envs]
+            current_skills, current_goals = self.get_skills_and_goals(obs_one_step)
+
+            # Iterate over skill and goal token pairs
+            # Need to gather the dist, value, and memory
+            for j in range(self.num_envs):
+                skill_num, goal = current_skills[j], current_goals[j]
+                obs_one_step = obs_one_step[j:j + 1]
+                memory_one_step = memory[i + j:i + j + 1]
+
+                # Use the same image observation but change the goal
+                new_obs = DictList({"image" : obs_one_step.image, "text" : goal.unsqueeze(0)})
+                d, v, m = self.ac_models[skill_num](new_obs, memory_one_step)
+
+                dist_logits.append(d.logits)
+                values.append(v)
+                memories.append(m)
+            
         dist_logits = torch.cat(dist_logits)
         values = torch.cat(values)
         memories = torch.cat(memories)
-        return dist_logits, values, memories
 
-    def forward(self, obs, memory):
-        # for network in self.ac_models:
-        #     network.zero_grad()
-
-        # If obs contains a constant multiple of examples of len(self.current_skill)
-        # Then we perform our old forward for multiple times
-
-        dist_logits, values, memories = [], [], []
-        for i_start in range(0, len(obs), len(self.current_skill)):
-            obs_small = obs[i_start:i_start + len(self.current_skill)]
-            memory_small = memory[i_start:i_start + len(self.current_skill)]
-            d, v, m = self.forward_small(obs_small, memory_small)
-            dist_logits.append(d)
-            values.append(v)
-            memories.append(m)
-        dist_logits = torch.cat(dist_logits)
-        values = torch.cat(values)
-        memories = torch.cat(memories)
-        
-        # Must return a categorical distribution of logits shape (num_procs, action_space)
-        distr = Categorical(logits=dist_logits)
-
-        return distr, values, memories
+        return Categorical(logits=dist_logits), values, memories
 
 
     
