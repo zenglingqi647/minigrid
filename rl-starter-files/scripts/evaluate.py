@@ -62,7 +62,7 @@ if __name__ == "__main__":
     agent = utils.Agent(env.observation_space, env.action_space, model_dir,
                         argmax=args.argmax, num_envs=args.procs,
                         use_memory=args.memory, use_text=args.text,
-                        planner_variant=args.llm_planner_variant, ask_every=args.ask_every)
+                        planner_variant=args.llm_planner_variant, ask_every=args.ask_every, procs=args.procs)
     print("Agent loaded\n")
 
     # Initialize logs

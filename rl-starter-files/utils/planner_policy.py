@@ -6,6 +6,7 @@ from .textual_minigrid import gpt_skill_planning, llama_skill_planning
 from .format import Vocabulary
 import torch_ac
 import threading
+from torch.distributions import Categorical
 
 
 SKILL_MDL_PATH = [
@@ -21,7 +22,7 @@ SKILL_MDL_PATH = [
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, use_memory=False, use_text=False, num_skills=7):
+    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=7):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
@@ -45,13 +46,13 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.ac_models = nn.ModuleList()
         self.timer = 0
         self.ask_cooldown = ask_cooldown
-        self.current_skill : int = 0
+        self.current_skill : list[int] = [0] * num_procs
         self.vocab : Vocabulary = vocab
         self.llm_variant = llm_variant
         for i in range(num_skills):
             self.ac_models.append(self.load_model(i))
 
-        self.lock = threading.Lock()
+        # self.lock = threading.Lock()
 
     @property
     def memory_size(self):
@@ -72,41 +73,64 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         return mdl
 
     def get_skill_distr(self, obs, memory):
-        with self.lock:
+        # with self.lock:
             if self.timer == 0:
                 invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
-                idx = torch.randint(low=0, high=obs.image.shape[0], size=(1,)).item()
-                obs_img : torch.Tensor = obs.image[idx]
-                mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
-                
-                try:
-                    if self.llm_variant == "gpt":
-                        skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                    elif self.llm_variant == "llama":
-                        skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
-                    print(f"Skill planning outcome: {skill_num} ")
-                except Exception as e:
-                    skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
-                    print(f"Planning failed, randomly generated {skill_num}. Here's the error message {str(e)}")
+                for idx in range(obs.image.shape[0]):
+                    obs_img : torch.Tensor = obs.image[idx]
+                    mission_txt = " ".join([invert_vocab[s.item()] for s in obs.text[idx]])
                     
-                self.current_skill = skill_num
+                    try:
+                        if self.llm_variant == "gpt":
+                            skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                        elif self.llm_variant == "llama":
+                            skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                        print(f"Skill planning outcome: {skill_num} ")
+                    except Exception as e:
+                        skill_num = torch.randint(0, len(self.ac_models), size=(1,)).item()
+                        print(f"Planning failed, randomly generated {skill_num}. Here's the error message {str(e)}")
+                    self.current_skill[idx] = skill_num
                 self.timer = self.ask_cooldown
-                
             else:
                 self.timer -= 1
             return self.current_skill
 
+    def forward_small(self, obs, memory):
+        skill_network_idx = self.get_skill_distr(obs, memory)
+        dist_logits, values, memories = [], [], []
+        for idx, skill_id in enumerate(skill_network_idx):
+            dist, value, mem = self.ac_models[skill_id](obs[idx:idx+1], memory[idx:idx+1])
+            dist_logits.append(dist.logits)
+            values.append(value)
+            memories.append(mem)
+        dist_logits = torch.cat(dist_logits)
+        values = torch.cat(values)
+        memories = torch.cat(memories)
+        return dist_logits, values, memories
+
     def forward(self, obs, memory):
         # for network in self.ac_models:
         #     network.zero_grad()
-        skill_network_idx = self.get_skill_distr(obs, memory)
-        result = self.ac_models[skill_network_idx](obs, memory)
-        for j in range(len(self.ac_models)):
-            if j != skill_network_idx:
-                model = self.ac_models[j]
-                for p in model.parameters():
-                    p.grad = torch.zeros_like(p)
-        return result
+
+        # If obs contains a constant multiple of examples of len(self.current_skill)
+        # Then we perform our old forward for multiple times
+
+        dist_logits, values, memories = [], [], []
+        for i_start in range(0, len(obs), len(self.current_skill)):
+            obs_small = obs[i_start:i_start + len(self.current_skill)]
+            memory_small = memory[i_start:i_start + len(self.current_skill)]
+            d, v, m = self.forward_small(obs_small, memory_small)
+            dist_logits.append(d)
+            values.append(v)
+            memories.append(m)
+        dist_logits = torch.cat(dist_logits)
+        values = torch.cat(values)
+        memories = torch.cat(memories)
+        
+        # Must return a categorical distribution of logits shape (num_procs, action_space)
+        distr = Categorical(logits=dist_logits)
+
+        return distr, values, memories
 
 
     

@@ -19,7 +19,7 @@ class Agent:
         if hasattr(self.preprocess_obss, "vocab"):
             self.preprocess_obss.vocab.load_vocab(utils.get_vocab(model_dir))
         if kwargs.get("planner_variant"):
-            self.acmodel = PlannerPolicy(obs_space, action_space, self.preprocess_obss.vocab, kwargs.get("planner_variant"), kwargs.get("ask_every"), use_memory=use_memory, use_text=use_text)
+            self.acmodel = PlannerPolicy(obs_space, action_space, self.preprocess_obss.vocab, kwargs.get("planner_variant"), kwargs.get("ask_every"), kwargs.get("procs"), use_memory=use_memory, use_text=use_text)
         else:
             self.acmodel = ACModel(obs_space, action_space, use_memory=use_memory, use_text=use_text)
         self.argmax = argmax

@@ -74,7 +74,9 @@ def gpt_skill_planning(obs, mission_txt):
     match = re.search(r'Answer: Skill (\d)', response)
     if match:
         skill = int(match.group(1))
-    return skill
+        return skill
+    else:
+        raise Exception("The language model did not generate a valid response.")
 
 def llama_skill_planning(obs, mission_txt):
     prompt = get_planning_prompt_str(obs, mission_txt)
