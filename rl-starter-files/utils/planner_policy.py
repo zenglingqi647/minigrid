@@ -73,7 +73,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             p.requires_grad = True
         return mdl
 
-    def get_skill_distr(self, obs, memory):
+    def get_skill(self, obs, memory):
         # with self.lock:
             if self.timer == 0:
                 invert_vocab = {v: k for k, v in self.vocab.vocab.items()}
@@ -97,7 +97,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             return self.current_skill
 
     def forward_small(self, obs, memory):
-        skill_network_idx = self.get_skill_distr(obs, memory)
+        skill_network_idx = self.get_skill(obs, memory)
         dist_logits, values, memories = [], [], []
         for idx, skill_id in enumerate(skill_network_idx):
             dist, value, mem = self.ac_models[skill_id](obs[idx:idx+1], memory[idx:idx+1])
