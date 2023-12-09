@@ -15,8 +15,6 @@ from curriculum import get_curriculum
 # Parse arguments
 parser = argparse.ArgumentParser()
 
-# parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
-
 # General parameters
 parser.add_argument("--model", default=None, help="name of the model (default: {ENV}_{ALGO}_{TIME})")
 parser.add_argument("--seed", type=int, default=1, help="random seed (default: 1)")
@@ -67,7 +65,10 @@ parser.add_argument("--frames",
                     type=int,
                     default=10**7,
                     help="number of frames of training (default: 1e7), total steps for the curriculum learning")
-parser.add_argument("--update-interval",default=15, type=int, help="number of frames between two updates (default: 1000)")
+parser.add_argument("--update-interval",
+                    default=15,
+                    type=int,
+                    help="number of frames between two updates (default: 1000)")
 # find and fourrooms may be removed
 parser.add_argument("--skill",
                     required=True,
@@ -141,7 +142,7 @@ if __name__ == "__main__":
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 
-    default_model_name = f"{args.skill}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}_{date}"
+    default_model_name = f"{args.skill}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}_{date}"
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)
@@ -179,13 +180,6 @@ if __name__ == "__main__":
             num_frames += logs["num_frames"]
             pbar.update(logs["num_frames"])
             update += 1
-            
-            if update % args.update_interval == 0:
-                success_rate = utils.synthesize(logs["return_per_episode"])['mean']
-                curriculum.update_level(success_rate)
-                if curriculum.if_new_env:
-                    new_env = curriculum.select_environment()
-                    preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
 
             # Print logs
             if update % args.log_interval == 0:
@@ -231,3 +225,12 @@ if __name__ == "__main__":
                     status["vocab"] = preprocess_obss.vocab.vocab
                 utils.save_status(status, model_dir)
                 txt_logger.info("Status saved")
+
+            # Should save the status first, then update the curriculum
+            if update % args.update_interval == 0:
+                success_rate = utils.synthesize(logs["return_per_episode"])['mean']
+                txt_logger.info(f"Success rate: {success_rate:.3f}")
+                curriculum.update_level(success_rate)
+                if curriculum.if_new_env:
+                    new_env = curriculum.select_environment()
+                    preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)

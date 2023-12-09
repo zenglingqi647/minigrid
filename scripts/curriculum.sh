@@ -1,0 +1,1 @@
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model GoTo --skill goto
