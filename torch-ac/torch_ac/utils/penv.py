@@ -1,7 +1,9 @@
 import multiprocessing
 import gymnasium as gym
+import platform
 
-
+if platform.system() != "Windows":
+    multiprocessing.set_start_method("fork")
 
 
 def worker(conn, env):
@@ -64,5 +66,3 @@ class ParallelEnv(gym.Env):
     def render(self):
         raise NotImplementedError
     
-if __name__ == "__main__":
-    multiprocessing.set_start_method("fork")
