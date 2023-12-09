@@ -233,7 +233,7 @@ if __name__ == "__main__":
                 txt_logger.info(f"Success rate: {success_rate:.3f}")
                 curriculum.update_level(success_rate)
                 
-                if curriculum.if_finished():
+                if curriculum.if_finished:
                     txt_logger.info("Curriculum early stopped...")
                     break
                 
