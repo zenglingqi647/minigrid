@@ -11,13 +11,13 @@ from .other import device
 
 
 SKILL_MDL_PATH = [
-    "storage/skill-model-v1/BabyAI-GoToObj-v0",
-    "storage/skill-model-v1/BabyAI-OpenDoor-v0",
-    "storage/skill-model-v1/BabyAI-PickupDist-v0",
-    "storage/skill-model-v1/BabyAI-PutNextLocalS5N3-v0",
-    "storage/skill-model-v1/BabyAI-UnlockLocal-v0",
-    "storage/skill-model-v1/BabyAI-FindObjS5-v0",
-    "storage/skill-model-v1/MiniGrid-FourRooms-v0"
+    "storage/skill-model-v1-curriculum/GoToObj",
+    "storage/skill-model-v1-curriculum/OpenDoor",
+    "storage/skill-model-v1-curriculum/Pickup",
+    "storage/skill-model-v1-curriculum/PutNext",
+    "storage/skill-model-v1-curriculum/Unlock",
+    "storage/skill-model-v1-curriculum/FindObj",
+    "storage/skill-model-v1-curriculum/FourRooms"
 ]
 
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):

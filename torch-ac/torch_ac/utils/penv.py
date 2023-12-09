@@ -29,12 +29,14 @@ class ParallelEnv(gym.Env):
         self.action_space = self.envs[0].action_space
 
         self.locals = []
+        self.processes = []
         for env in self.envs[1:]:
             local, remote = multiprocessing.Pipe()
             self.locals.append(local)
             p = multiprocessing.Process(target=worker, args=(remote, env))
             p.daemon = True
             p.start()
+            self.processes.append(p)
             remote.close()
 
     def reset(self):
@@ -51,6 +53,13 @@ class ParallelEnv(gym.Env):
             obs, _ = self.envs[0].reset()
         results = zip(*[(obs, reward, terminated, truncated, info)] + [local.recv() for local in self.locals])
         return results
+    
+    def stop(self):
+        for p, conn in zip(self.processes, self.locals):
+            p.terminate()
+            conn.close()
+            if not p.is_alive():
+                p.join()
 
     def render(self):
         raise NotImplementedError

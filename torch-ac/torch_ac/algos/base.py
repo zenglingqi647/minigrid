@@ -3,6 +3,7 @@ import torch
 
 from torch_ac.format import default_preprocess_obss
 from torch_ac.utils import DictList, ParallelEnv
+from gymnasium.vector import AsyncVectorEnv
 
 
 class BaseAlgo(ABC):

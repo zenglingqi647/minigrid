@@ -10,7 +10,7 @@ import utils
 from utils import device
 from model import ACModel
 #? from torch_ac.utils.penv import ParallelEnv
-from curriculum import get_curriculum
+from .curriculum import get_curriculum
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -232,6 +232,7 @@ if __name__ == "__main__":
                 txt_logger.info(f"Success rate: {success_rate:.3f}")
                 curriculum.update_level(success_rate)
                 if curriculum.if_new_env:
+                    algo.env.stop()
                     new_env = curriculum.select_environment()
                     preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
     
