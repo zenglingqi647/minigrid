@@ -168,8 +168,9 @@ if __name__ == "__main__":
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
-    with tqdm(initial=num_frames, total=args.frames) as pbar:
-        while num_frames < args.frames:
+    total_frames = num_frames + args.frames
+    with tqdm(initial=num_frames, total=total_frames) as pbar:
+        while num_frames < total_frames:
             # Update model parameters
             update_start_time = time.time()
             exps, logs1 = algo.collect_experiences()
