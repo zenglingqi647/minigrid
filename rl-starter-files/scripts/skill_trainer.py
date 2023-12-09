@@ -232,7 +232,12 @@ if __name__ == "__main__":
                 success_rate = utils.synthesize(logs["return_per_episode"])['mean']
                 txt_logger.info(f"Success rate: {success_rate:.3f}")
                 curriculum.update_level(success_rate)
-                if curriculum.if_new_env:
+                
+                if curriculum.if_finished():
+                    txt_logger.info("Curriculum early stopped...")
+                    break
+                
+                if curriculum.if_new_env():
                     algo.env.stop()
                     new_env = curriculum.select_environment()
                     preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
