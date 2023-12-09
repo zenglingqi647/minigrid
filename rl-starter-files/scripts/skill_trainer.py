@@ -10,23 +10,26 @@ import utils
 from utils import device
 from model import ACModel
 #? from torch_ac.utils.penv import ParallelEnv
+from curriculum import Curriculum
+
 # Parse arguments
 parser = argparse.ArgumentParser()
 
 # General parameters
-parser.add_argument("--algo", required=True, help="algorithm to use: a2c | ppo (REQUIRED)")
-parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
+parser.add_argument("--algo", required=True, default="ppo", help="algorithm to use: a2c | ppo (REQUIRED)")
 
-# find and fourrooms may be removed
-parser.add_argument("--skill", required=True,default="goto", help="name of the environment to train on (REQUIRED)", choices=['goto', 'pickup', 'open', 'putnext', 'unlock', 'find','fourrooms'])
+parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
 parser.add_argument("--model", default=None, help="name of the model (default: {ENV}_{ALGO}_{TIME})")
 parser.add_argument("--seed", type=int, default=1, help="random seed (default: 1)")
-parser.add_argument("--log-interval", type=int, default=1, help="number of updates between two logs (default: 1)")
-parser.add_argument("--save-interval",
+parser.add_argument("--log-interval",
                     type=int,
                     default=10,
-                    help="number of updates between two saves (default: 10, 0 means no saving)")
-parser.add_argument("--procs", type=int, default=16, help="number of processes (default: 16)")
+                    help="number of updates between two logs (vanilla default: 1)")
+parser.add_argument("--save-interval",
+                    type=int,
+                    default=15,
+                    help="number of updates between two saves (vanilla default: 10, 0 means no saving)")
+parser.add_argument("--procs", type=int, default=64, help="number of processes (vanilla default: 16)")
 parser.add_argument("--frames", type=int, default=10**7, help="number of frames of training (default: 1e7)")
 parser.add_argument("--obs-size",
                     type=int,
@@ -38,7 +41,7 @@ parser.add_argument("--epochs", type=int, default=4, help="number of epochs for 
 parser.add_argument("--batch-size", type=int, default=1280, help="batch size for PPO (vanilla efault: 256)")
 parser.add_argument("--frames-per-proc",
                     type=int,
-                    default=None,
+                    default=40,
                     help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
 parser.add_argument("--discount", type=float, default=0.99, help="discount factor (default: 0.99)")
 parser.add_argument("--lr", type=float, default=0.001, help="learning rate (default: 0.001)")
@@ -55,13 +58,19 @@ parser.add_argument("--clip-eps", type=float, default=0.2, help="clipping epsilo
 parser.add_argument(
     "--recurrence",
     type=int,
-    default=1,
+    default=20,
     help=
     "number of time-steps gradient is backpropagated (default: 1). If > 1, a LSTM is added to the model to have memory."
 )
-parser.add_argument("--text", action="store_true", default=False, help="add a GRU to the model to handle text input")
+parser.add_argument("--text", action="store_true", default=True, help="add a GRU to the model to handle text input")
 
 # Parameters for curriculum learning
+# find and fourrooms may be removed
+parser.add_argument("--skill",
+                    required=True,
+                    default="goto",
+                    help="name of the environment to train on (REQUIRED)",
+                    choices=['goto', 'pickup', 'open', 'putnext', 'unlock', 'find', 'fourrooms'])
 
 if __name__ == "__main__":
     args = parser.parse_args()
