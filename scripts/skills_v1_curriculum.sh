@@ -8,7 +8,7 @@
 # do
 #     python -m scripts.train --algo ppo --env BabyAI-GoToLocal$name-v0 --model skill-model-v1-curriculum/GoToObj --text --frames 1000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --batch-size 1280 --frames-per-proc 40 --obs-size 11
 # done
-
+cd ../rl-starter-files
 for i in $(seq 2 7)
 do python -m scripts.train --algo ppo --env BabyAI-GoToLocalS8N$i-v0 --model skill-model-v1-curriculum/GoToObj --text --frames 1000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --batch-size 200 --frames-per-proc 40 --obs-size 11
 done
