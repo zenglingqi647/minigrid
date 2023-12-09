@@ -4,6 +4,7 @@ from envs.pickup import pickup_dict
 from envs.putnext import putnext_dict
 from envs.unlock import unlock_dict
 
+
 def get_curriculum(args):
     if args.skill == 'goto':
         return Curriculum(goto_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
@@ -17,6 +18,7 @@ def get_curriculum(args):
         return Curriculum(unlock_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     else:
         raise NotImplementedError
+
 
 class Curriculum:
 
@@ -38,6 +40,7 @@ class Curriculum:
         self.env_idx = 0
         self.repeated = 0
         self.finished_levels = []
+        self.cover = {level: {env: False for env in envs['envs']} for level, envs in env_dict.items()}
         self.if_new = False
         # highly not possible to flag this as finished
         self.if_finished = False
@@ -46,9 +49,11 @@ class Curriculum:
         """
         Selects an environment based on the current level.
         """
+        env = self.env_dict[self.current_level]['envs'][self.env_idx]
+        self.cover[self.current_level][env] = True  # Mark as covered
         self.if_new = False
-        return self.env_dict[self.current_level]['envs'][self.env_idx]
-    
+        return env
+
     def if_new_env(self):
         return self.if_new
 
@@ -87,9 +92,14 @@ class Curriculum:
             self.current_level += 1
             self.current_level = self.current_level % len(self.env_dict.keys())
             self.if_new = True
-        
+
         if len(self.finished_levels) == len(self.env_dict.keys()):
             self.if_finished = True
+
+        if self.if_new:
+            for env in self.env_dict[self.current_level]['envs']:
+                if env not in self.cover[self.current_level]:
+                    self.cover[self.current_level][env] = False
 
 
 if __name__ == '__main__':
