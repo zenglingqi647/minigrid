@@ -10,7 +10,7 @@ from minigrid.envs.babyai.core.verifier import ObjDesc, PutNextInstr
 putnext_dict = {
     0: {
         "name": "PutNextLocal",
-        "envs": [f'BabyAI-PutNextLocalS{s}N{n}' for s in range(5, 9) for n in range(2, 5)]
+        "envs": [f'BabyAI-CustomPutNextLocalS{s}N{n}' for s in range(5, 9) for n in range(2, 5)]
     },
 }
 

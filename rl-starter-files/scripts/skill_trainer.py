@@ -10,7 +10,7 @@ import utils
 from utils import device
 from model import ACModel
 #? from torch_ac.utils.penv import ParallelEnv
-from .curriculum import get_curriculum
+from curriculum import get_curriculum
 
 # Parse arguments
 parser = argparse.ArgumentParser()
