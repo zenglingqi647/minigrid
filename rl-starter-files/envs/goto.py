@@ -5,39 +5,39 @@ from minigrid.envs.babyai.core.verifier import GoToInstr, ObjDesc
 from minigrid.envs.babyai.goto import GoToRedBallGrey, GoToRedBall, GoToRedBlueBall
 
 goto_dict = {
+    # 0: {
+    #     "name": "GoToObj",
+    #     "envs": ["BabyAI-GoToObjS4-v0", "BabyAI-GoToObjS6-v0", "BabyAI-GoToObj-v0"]
+    # },
+    # 1: {
+    #     "name": "GoToDoor",
+    #     "envs": ["BabyAI-GoToDoor-v0"]
+    # },
+    # 2: {
+    #     "name":
+    #         "GoToRedBallGrey",
+    #     "envs": [
+    #         'BabyAI-GoToRedBallGreyS8N2', 'BabyAI-GoToRedBallGreyS8N3', 'BabyAI-GoToRedBallGreyS8N4',
+    #         'BabyAI-GoToRedBallGreyS8N5', 'BabyAI-GoToRedBallGreyS8N6', "BabyAI-GoToRedBallGrey-v0"
+    #     ]
+    # },
+    # 3: {
+    #     "name":
+    #         "GoToRedBall",
+    #     "envs": [
+    #         'BabyAI-GoToRedBallS8N2', 'BabyAI-GoToRedBallS8N3', 'BabyAI-GoToRedBallS8N4', 'BabyAI-GoToRedBallS8N5',
+    #         'BabyAI-GoToRedBallS8N6', "BabyAI-GoToRedBall-v0"
+    #     ]
+    # },
+    # 4: {
+    #     "name":
+    #         "GoToRedBlueBall",
+    #     "envs": [
+    #         'BabyAI-GoToRedBlueBallS8N2', 'BabyAI-GoToRedBlueBallS8N3', 'BabyAI-GoToRedBlueBallS8N4',
+    #         'BabyAI-GoToRedBlueBallS8N5', 'BabyAI-GoToRedBlueBallS8N6', "BabyAI-GoToRedBlueBall-v0"
+    #     ]
+    # },
     0: {
-        "name": "GoToObj",
-        "envs": ["BabyAI-GoToObjS4-v0", "BabyAI-GoToObjS6-v0", "BabyAI-GoToObj-v0"]
-    },
-    1: {
-        "name": "GoToDoor",
-        "envs": ["BabyAI-GoToDoor-v0"]
-    },
-    2: {
-        "name":
-            "GoToRedBallGrey",
-        "envs": [
-            'BabyAI-GoToRedBallGreyS8N2', 'BabyAI-GoToRedBallGreyS8N3', 'BabyAI-GoToRedBallGreyS8N4',
-            'BabyAI-GoToRedBallGreyS8N5', 'BabyAI-GoToRedBallGreyS8N6', "BabyAI-GoToRedBallGrey-v0"
-        ]
-    },
-    3: {
-        "name":
-            "GoToRedBall",
-        "envs": [
-            'BabyAI-GoToRedBallS8N2', 'BabyAI-GoToRedBallS8N3', 'BabyAI-GoToRedBallS8N4', 'BabyAI-GoToRedBallS8N5',
-            'BabyAI-GoToRedBallS8N6', "BabyAI-GoToRedBall-v0"
-        ]
-    },
-    4: {
-        "name":
-            "GoToRedBlueBall",
-        "envs": [
-            'BabyAI-GoToRedBlueBallS8N2', 'BabyAI-GoToRedBlueBallS8N3', 'BabyAI-GoToRedBlueBallS8N4',
-            'BabyAI-GoToRedBlueBallS8N5', 'BabyAI-GoToRedBlueBallS8N6', "BabyAI-GoToRedBlueBall-v0"
-        ]
-    },
-    5: {
         "name":
             "CustomGoToObjDoor",
         "envs": [
@@ -46,7 +46,7 @@ goto_dict = {
             "BabyAI-GoToObjDoor-v0"
         ]
     },
-    6: {
+    1: {
         "name":
             "GoToLocal",
         "envs": [
@@ -211,7 +211,7 @@ class CustomGoToObjDoor(RoomGridLevel):
 
     def __init__(self, num_dists=8, **kwargs):
         self.num_dists = num_dists
-        super().__init__(room_size=8, **kwargs)
+        super().__init__(**kwargs)
 
     def gen_mission(self):
         self.place_agent(1, 1)
