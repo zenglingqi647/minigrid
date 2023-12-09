@@ -56,7 +56,10 @@ python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --fr
 
 python -m scripts.train --algo ppo --env FourRooms --text --frames 10000000 --log-interval 10 --recurrence 16 --frames-per-proc=128 --custom-hw 17 
 
-python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --frames-per-proc 40
+python -m scripts.train --algo ppo --env MiniGrid-MultiRoom-N4-S5-v0 --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 16 --save-interval 15 --procs 64 --frames-per-proc 40
 
 # hw: 9, 11, 13
-python -m scripts.train --algo ppo --env FourRooms --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 20 --save-interval 15 --procs 64 --frames-per-proc 40 --custom-hw 17 --seed 3
+python -m scripts.train --algo ppo --env FourRooms --text --batch-size 1280 --frames 30000000 --log-interval 10 --recurrence 16 --save-interval 15 --procs 64 --frames-per-proc 40 --custom-hw 17 --seed 3
+
+
+python -m scripts.train --algo ppo --env BabyAI-GoToRedBallGreyS8N2 --text --frames 10000000 --log-interval 10 --recurrence 16 --frames-per-proc=128

@@ -9,19 +9,18 @@ from tqdm import tqdm
 import utils
 from utils import device
 from model import ACModel
-from utils.trajectory_reward import LLMRewardFunction
-from utils.textual_minigrid import GPTRewardFunction
-from utils.planner_policy import PlannerPolicy
-from minigrid.wrappers import PositionBonus
-
+#? from torch_ac.utils.penv import ParallelEnv
 # Parse arguments
 parser = argparse.ArgumentParser()
 
 # General parameters
 parser.add_argument("--algo", required=True, help="algorithm to use: a2c | ppo (REQUIRED)")
 parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
+
+# find and fourrooms may be removed
+parser.add_argument("--skill", required=True,default="goto", help="name of the environment to train on (REQUIRED)", choices=['goto', 'pickup', 'open', 'putnext', 'unlock', 'find','fourrooms'])
 parser.add_argument("--model", default=None, help="name of the model (default: {ENV}_{ALGO}_{TIME})")
-parser.add_argument("--seed", typeagent_view_size=int, default=1, help="random seed (default: 1)")
+parser.add_argument("--seed", type=int, default=1, help="random seed (default: 1)")
 parser.add_argument("--log-interval", type=int, default=1, help="number of updates between two logs (default: 1)")
 parser.add_argument("--save-interval",
                     type=int,
@@ -31,8 +30,8 @@ parser.add_argument("--procs", type=int, default=16, help="number of processes (
 parser.add_argument("--frames", type=int, default=10**7, help="number of frames of training (default: 1e7)")
 parser.add_argument("--obs-size",
                     type=int,
-                    default=7,
-                    help="size of observation for environment, should be an odd number (default: 7)")
+                    default=11,
+                    help="size of observation for environment, should be an odd number (default: 11)")
 
 # Parameters for main algorithm
 parser.add_argument("--epochs", type=int, default=4, help="number of epochs for PPO (default: 4)")
@@ -62,43 +61,16 @@ parser.add_argument(
 )
 parser.add_argument("--text", action="store_true", default=False, help="add a GRU to the model to handle text input")
 
-# Parameters for LLM
-parser.add_argument("--llm-reward-variant", default=None, help="Use LLM to shape rewards. Possible values: 'gpt-3.5-turbo', 'gpt-4'")
-parser.add_argument("--use-trajectory",
-                    action="store_true",
-                    default=False,
-                    help="Use GPT to predict the trajectory for reward")
-parser.add_argument('--traj-r-decay', type=float, default=0.7, help='Decay factor for trajectory reward')
-parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperature for LLM reward')
-parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
-parser.add_argument("--ask-every", type=float, default=2000, help="Fixed Interval of Asking GPT")
-parser.add_argument("--llm-planner-variant", type=str, default=None, help="LLM Planner Variant")
-parser.add_argument("--use-position-bonus",
-                    action="store_true",
-                    default=False,
-                    help="uses a high level planner network")
-parser.add_argument("--custom-hw",
-                    default=19,
-                    type=int,
-                    help="customize the height and width of the Minigrid-FourRooms gridworld, h==w")
+# Parameters for curriculum learning
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
     args.mem = args.recurrence > 1
 
     # Set run dir
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-    askevery_str = f"_askevery{args.ask_every}" if args.llm_reward_variant or args.llm_planner_variant else ""
-    append = f'_hw{args.custom_hw}' if args.env == 'FourRooms' else ''
-    llm_reward_variant = f'_llm{args.llm_reward_variant}' if args.llm_reward_variant else ''
-    llm_planner_variant = f'_llmplanner{args.llm_planner_variant}' if args.llm_planner_variant else ''
 
-    default_model_name = f"{args.env}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}{llm_reward_variant}{llm_planner_variant}{askevery_str}{append}_{date}"
-
-    print(
-        f"llm{args.llm_reward_variant}_{llm_planner_variant}_traj{args.use_trajectory}_trajrdecay{args.traj_r_decay}_llmtemp{args.llm_temperature}_askgptprob{args.ask_gpt_prob}{askevery_str}_useposbonus{args.use_position_bonus}"
-    )
+    default_model_name = f"{args.skill}_{args.algo}_rec{args.recurrence}_f{args.frames}_fp{args.frames_per_proc}_seed{args.seed}_{date}"
 
     model_name = args.model or default_model_name
     model_dir = utils.get_model_dir(model_name)
@@ -121,12 +93,7 @@ if __name__ == "__main__":
     # Load environments
     envs = []
     for i in range(args.procs):
-        if args.use_position_bonus:
-            envs.append(utils.make_env_pos_bonus(args.env, args.seed + 10000 * i))
-        if args.env == 'FourRooms':
-            envs.append(utils.make_four_rooms_env(args.seed + 10000 * i, size=9))
-        else:
-            envs.append(utils.make_env(args.env, args.seed + 10000 * i, obs_size=args.obs_size))
+        envs.append(utils.make_env(args.env, args.seed + 10000 * i, obs_size=args.obs_size))
     txt_logger.info("Environments loaded\n")
 
     # Load training status
@@ -143,10 +110,7 @@ if __name__ == "__main__":
     txt_logger.info("Observations preprocessor loaded")
 
     # Load model
-    if args.llm_planner_variant is not None:
-        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
-    else:
-        acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
+    acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
         acmodel.load_state_dict(status["model_state"])
     acmodel.to(device)
@@ -163,19 +127,12 @@ if __name__ == "__main__":
     elif args.algo == "ppo":
         if not args.frames_per_proc:
             args.frames_per_proc = 128
-        if args.llm_reward_variant is not None and args.use_trajectory:
-            reshape_reward = LLMRewardFunction(query_interval=args.ask_every,
-                                               decay=args.traj_r_decay,
-                                               llm_temperature=args.llm_temperature,
-                                               llm=args.llm_reward_variant).reshape_reward
-        elif args.llm_reward_variant is not None:
-            reshape_reward = GPTRewardFunction(query_gpt_prob=args.ask_gpt_prob,
-                                               ask_every=args.ask_every).reshape_reward
         else:
             reshape_reward = None
-        algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
-        args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
-        reshape_reward)
+        algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
+                                args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
+                                args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
+                                reshape_reward)
     else:
         raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
