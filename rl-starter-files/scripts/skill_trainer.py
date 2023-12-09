@@ -235,5 +235,6 @@ if __name__ == "__main__":
                     algo.env.stop()
                     new_env = curriculum.select_environment()
                     preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
-    
+
     txt_logger.info("Training done\nCurriculum covered skill levels:\n{}".format(curriculum.finished_levels))
+    txt_logger.info("Curriculum covered environments:\n{}".format(curriculum.cover))
