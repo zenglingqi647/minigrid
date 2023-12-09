@@ -29,3 +29,15 @@ register(id='BabyAI-CustomGoToObjDoorS8N7', entry_point='envs.goto:CustomGoToObj
 # PickUp
 for n in range(1, 9):
     register(id=f'BabyAI-CustomPickupLocN{n}', entry_point=f'envs.pickup:CustomPickupLocN{n}')
+
+# PutNext
+for s in range(5, 9):
+    for n in range(2, 5):
+        register(
+            id=f'BabyAI-PutNextLocalS{s}N{n}',
+            entry_point=f'envs.putnext:PutNextLocal',
+            kwargs={
+                "room_size": s,
+                "num_objs": n
+            },
+        )

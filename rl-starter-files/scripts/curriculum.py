@@ -1,6 +1,7 @@
 from envs.goto import goto_dict
 from envs.open import open_dict
 from envs.pickup import pickup_dict
+from envs.putnext import putnext_dict
 
 def get_curriculum(args):
     if args.skill == 'goto':
@@ -9,6 +10,8 @@ def get_curriculum(args):
         return Curriculum(open_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'pickup':
         return Curriculum(pickup_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+    elif args.skill == 'putnext':
+        return Curriculum(putnext_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     else:
         raise NotImplementedError
 
