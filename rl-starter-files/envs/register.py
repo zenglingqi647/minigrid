@@ -1,36 +1,29 @@
 from gymnasium.envs.registration import register
+from gymnasium.envs.registration import registry
+
+
+# Unregister the original BabyAI environments
+def unregister_env(env_id):
+    if env_id in registry:
+        del registry[env_id]
+
 
 # GoTo
-register(id='BabyAI-GoToRedBallGreyS8N2', entry_point='envs.goto:GoToRedBallGreyS8N2')
-register(id='BabyAI-GoToRedBallGreyS8N3', entry_point='envs.goto:GoToRedBallGreyS8N3')
-register(id='BabyAI-GoToRedBallGreyS8N4', entry_point='envs.goto:GoToRedBallGreyS8N4')
-register(id='BabyAI-GoToRedBallGreyS8N5', entry_point='envs.goto:GoToRedBallGreyS8N5')
-register(id='BabyAI-GoToRedBallGreyS8N6', entry_point='envs.goto:GoToRedBallGreyS8N6')
+env_types = ["GoToRedBallGrey", "GoToRedBall", "GoToRedBlueBall", "CustomGoToObjDoor"]
 
-register(id='BabyAI-GoToRedBallS8N2', entry_point='envs.goto:GoToRedBallS8N2')
-register(id='BabyAI-GoToRedBallS8N3', entry_point='envs.goto:GoToRedBallS8N3')
-register(id='BabyAI-GoToRedBallS8N4', entry_point='envs.goto:GoToRedBallS8N4')
-register(id='BabyAI-GoToRedBallS8N5', entry_point='envs.goto:GoToRedBallS8N5')
-register(id='BabyAI-GoToRedBallS8N6', entry_point='envs.goto:GoToRedBallS8N6')
-
-register(id='BabyAI-GoToRedBlueBallS8N2', entry_point='envs.goto:GoToRedBlueBallS8N2')
-register(id='BabyAI-GoToRedBlueBallS8N3', entry_point='envs.goto:GoToRedBlueBallS8N3')
-register(id='BabyAI-GoToRedBlueBallS8N4', entry_point='envs.goto:GoToRedBlueBallS8N4')
-register(id='BabyAI-GoToRedBlueBallS8N5', entry_point='envs.goto:GoToRedBlueBallS8N5')
-register(id='BabyAI-GoToRedBlueBallS8N6', entry_point='envs.goto:GoToRedBlueBallS8N6')
-
-register(id='BabyAI-CustomGoToObjDoorS8N2', entry_point='envs.goto:CustomGoToObjDoorS8N2')
-register(id='BabyAI-CustomGoToObjDoorS8N3', entry_point='envs.goto:CustomGoToObjDoorS8N3')
-register(id='BabyAI-CustomGoToObjDoorS8N4', entry_point='envs.goto:CustomGoToObjDoorS8N4')
-register(id='BabyAI-CustomGoToObjDoorS8N5', entry_point='envs.goto:CustomGoToObjDoorS8N5')
-register(id='BabyAI-CustomGoToObjDoorS8N6', entry_point='envs.goto:CustomGoToObjDoorS8N6')
-register(id='BabyAI-CustomGoToObjDoorS8N7', entry_point='envs.goto:CustomGoToObjDoorS8N7')
+for env_type in env_types:
+    for n in range(2, 8 if env_type == "CustomGoToObjDoor" else 7):
+        env_id = f'BabyAI-{env_type}S8N{n}'
+        entry_point = f'envs.goto:{env_type}S8N{n}'
+        register(id=env_id, entry_point=entry_point)
 
 # PickUp
 for n in range(1, 9):
     register(id=f'BabyAI-CustomPickupLocN{n}', entry_point=f'envs.pickup:CustomPickupLocN{n}')
 
 # PutNext
+unregister_env('BabyAI-PutNextLocalS5N3-v0')
+unregister_env('BabyAI-PutNextLocalS6N4-v0')
 for s in range(5, 9):
     for n in range(2, 5):
         register(

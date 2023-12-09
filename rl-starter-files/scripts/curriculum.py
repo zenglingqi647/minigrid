@@ -36,14 +36,15 @@ class Curriculum:
         self.repeated = 0
         self.finished_levels = []
         self.if_new = False
+        # highly not possible to flag this as finished
+        self.if_finished = False
 
     def select_environment(self):
         """
         Selects an environment based on the current level.
         """
         self.if_new = False
-        envs_at_level = self.env_dict[self.current_level]['envs']
-        return envs_at_level[self.env_idx]
+        return self.env_dict[self.current_level]['envs'][self.env_idx]
     
     def if_new_env(self):
         return self.if_new
@@ -81,7 +82,11 @@ class Curriculum:
         # check if level is finished
         while self.current_level in self.finished_levels:
             self.current_level += 1
+            self.current_level = self.current_level % len(self.env_dict.keys())
             self.if_new = True
+        
+        if len(self.finished_levels) == len(self.env_dict.keys()):
+            self.if_finished = True
 
 
 if __name__ == '__main__':
