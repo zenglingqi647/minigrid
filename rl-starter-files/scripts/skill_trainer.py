@@ -10,7 +10,7 @@ import utils
 from utils import device
 from model import ACModel
 #? from torch_ac.utils.penv import ParallelEnv
-from .curriculum import get_curriculum
+from curriculum import get_curriculum
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -24,7 +24,7 @@ parser.add_argument("--log-interval",
                     help="number of updates between two logs (vanilla default: 1)")
 parser.add_argument("--save-interval",
                     type=int,
-                    default=15,
+                    default=10,
                     help="number of updates between two saves (vanilla default: 10, 0 means no saving)")
 parser.add_argument("--procs", type=int, default=64, help="number of processes (vanilla default: 16)")
 parser.add_argument("--obs-size",
@@ -66,7 +66,7 @@ parser.add_argument("--frames",
                     default=10**7,
                     help="number of frames of training (default: 1e7), total steps for the curriculum learning")
 parser.add_argument("--update-interval",
-                    default=15,
+                    default=10,
                     type=int,
                     help="number of frames between two updates (default: 1000)")
 # find and fourrooms may be removed
@@ -232,10 +232,15 @@ if __name__ == "__main__":
                 success_rate = utils.synthesize(logs["return_per_episode"])['mean']
                 txt_logger.info(f"Success rate: {success_rate:.3f}")
                 curriculum.update_level(success_rate)
-                if curriculum.if_new_env:
+                
+                if curriculum.if_finished:
+                    txt_logger.info("Curriculum early stopped...")
+                    break
+                
+                if curriculum.if_new_env():
                     algo.env.stop()
                     new_env = curriculum.select_environment()
                     preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
 
     txt_logger.info("Training done\nCurriculum covered skill levels:\n{}".format(curriculum.finished_levels))
-    txt_logger.info("Curriculum covered environments:\n{}".format(curriculum.cover))
+    txt_logger.info("Curriculum success rates:\n{}".format(curriculum.cover))
