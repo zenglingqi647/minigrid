@@ -90,14 +90,17 @@ class Curriculum:
             self.current_level = self.current_level % len(self.env_dict.keys())
             self.if_new = True
 
+        if len(self.finished_levels) == len(self.env_dict.keys()):
+            self.if_finished = True
+            return
+
         # check if level is finished
         while self.current_level in self.finished_levels:
             self.current_level += 1
             self.current_level = self.current_level % len(self.env_dict.keys())
             self.if_new = True
 
-        if len(self.finished_levels) == len(self.env_dict.keys()):
-            self.if_finished = True
+        
 
 
 if __name__ == '__main__':
