@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from minigrid.envs.babyai.core.levelgen import LevelGen
-from minigrid.envs.babyai.core.roomgrid_level import RejectSampling, RoomGridLevel
-from minigrid.envs.babyai.core.verifier import ObjDesc, PickupInstr
 
 pickup_dict = {
     0: {
@@ -79,20 +77,10 @@ class CustomPickupLoc(LevelGen):
     def __init__(self, **kwargs):
         # We add many distractors to increase the probability
         # of ambiguous locations within the same room
-        super().__init__(
-            action_kinds=["pickup"],
-            instr_kinds=["action"],
-            num_rows=1,
-            num_cols=1,
-            num_dists=8,
-            locked_room_prob=0,
-            locations=True,
-            unblocking=False,
-            **kwargs,
-        )
+        super().__init__(**kwargs)
 
 
-for n in range(1, 9):
+for n in range(1, 8):
     class_name = f"CustomPickupLocN{n}"
     class_body = type(
         class_name, (CustomPickupLoc,), {
@@ -100,8 +88,8 @@ for n in range(1, 9):
                 lambda self, **kwargs: CustomPickupLoc.__init__(self,
                                                                 action_kinds=["pickup"],
                                                                 instr_kinds=["action"],
-                                                                num_rows=1,
-                                                                num_cols=1,
+                                                                num_rows=n,
+                                                                num_cols=n,
                                                                 num_dists=n,
                                                                 locked_room_prob=0,
                                                                 locations=True,
