@@ -40,7 +40,7 @@ class Curriculum:
         self.env_idx = 0
         self.repeated = 0
         self.finished_levels = []
-        self.cover = {level: {env: False for env in envs['envs']} for level, envs in env_dict.items()}
+        self.cover = {level: {env: 0 for env in envs['envs']} for level, envs in env_dict.items()}
         self.if_new = False
         # highly not possible to flag this as finished
         self.if_finished = False
@@ -50,7 +50,6 @@ class Curriculum:
         Selects an environment based on the current level.
         """
         env = self.env_dict[self.current_level]['envs'][self.env_idx]
-        self.cover[self.current_level][env] = True  # Mark as covered
         self.if_new = False
         return env
 
@@ -61,6 +60,10 @@ class Curriculum:
         """
         Updates the level and env difficulties based on the success rate.
         """
+        # update success rate
+        if success_rate > self.cover[self.current_level]['envs'][self.env_idx]:
+            self.cover[self.current_level]['envs'][self.env_idx] = success_rate
+            
         # update difficulty
         if success_rate > self.upgrade_threshold and self.env_idx < len(self.env_dict[self.current_level]['envs']):
             self.env_idx += 1
@@ -95,11 +98,6 @@ class Curriculum:
 
         if len(self.finished_levels) == len(self.env_dict.keys()):
             self.if_finished = True
-
-        if self.if_new:
-            for env in self.env_dict[self.current_level]['envs']:
-                if env not in self.cover[self.current_level]:
-                    self.cover[self.current_level][env] = False
 
 
 if __name__ == '__main__':
