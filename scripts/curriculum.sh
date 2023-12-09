@@ -13,7 +13,15 @@ python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Unlock --skill unlock
 # finetune
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model UnlockFinetune --skill unlock
-python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model GoToFinetune --skill goto
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model GotoFinetune --skill goto
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model OpenFinetune --skill open
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PickUpFinetune --skill pickup
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PutNextFinetune --skill putnext
+
+
+# baseline ppo
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Unlock-Baseline --obs-size -1 --skill unlock
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Goto-Baseline --obs-size -1 --skill goto
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Open-Baseline --obs-size -1 --skill open
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PickUp-Baseline --obs-size -1 --skill pickup
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PutNext-Baseline --obs-size -1 --skill putnext

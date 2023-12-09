@@ -6,13 +6,19 @@ from minigrid.wrappers import ViewSizeWrapper
 from envs.register import *
 
 def make_env(env_key, seed=None, render_mode=None, obs_size=7):
+    '''
+    obs_size: -1 for fully observable
+    '''
     if render_mode:
         env = gym.make(env_key, render_mode=render_mode)
     else:
         env = gym.make(env_key)
     # env = FullyObsWrapper(env)
     env.reset(seed=seed)
-    env = ViewSizeWrapper(env, agent_view_size=obs_size)  #default is 7
+    if obs_size == -1:
+        env = FullyObsWrapper(env)
+    else:
+        env = ViewSizeWrapper(env, agent_view_size=obs_size)  #default is 7
     env.reset(seed=seed)
     return env
 
