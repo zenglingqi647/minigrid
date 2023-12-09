@@ -35,7 +35,7 @@ parser.add_argument("--obs-size",
 
 # Parameters for main algorithm
 parser.add_argument("--epochs", type=int, default=4, help="number of epochs for PPO (default: 4)")
-parser.add_argument("--batch-size", type=int, default=256, help="batch size for PPO (default: 256)")
+parser.add_argument("--batch-size", type=int, default=1280, help="batch size for PPO (vanilla efault: 256)")
 parser.add_argument("--frames-per-proc",
                     type=int,
                     default=None,
