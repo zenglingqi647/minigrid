@@ -1,7 +1,3 @@
-"""
-Copied and adapted from https://github.com/mila-iqia/babyai.
-Levels described in the Baby AI ICLR 2019 submission, with the `Go to` instruction.
-"""
 from __future__ import annotations
 
 from minigrid.envs.babyai.core.roomgrid_level import RoomGridLevel
