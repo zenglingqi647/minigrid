@@ -11,3 +11,9 @@ python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PickUp --skill pickup
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PutNext --skill putnext
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Unlock --skill unlock
+# finetune
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model UnlockFinetune --skill unlock
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model GoToFinetune --skill goto
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model OpenFinetune --skill open
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PickUpFinetune --skill pickup
+python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PutNextFinetune --skill putnext

@@ -27,10 +27,13 @@ unregister_env('BabyAI-PutNextLocalS6N4-v0')
 for s in range(5, 9):
     for n in range(2, 5):
         register(
-            id=f'BabyAI-PutNextLocalS{s}N{n}',
-            entry_point=f'envs.putnext:PutNextLocal',
+            id=f'BabyAI-CustomPutNextLocalS{s}N{n}',
+            entry_point=f'envs.putnext:CustomPutNextLocal',
             kwargs={
                 "room_size": s,
                 "num_objs": n
             },
         )
+
+for n in range(1, 3):
+    register(id=f'BabyAI-CustomUnlockLocalN{n}', entry_point=f'envs.unlock:CustomUnlockLocalN{n}')

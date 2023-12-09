@@ -15,7 +15,7 @@ putnext_dict = {
 }
 
 
-class PutNextLocal(RoomGridLevel):
+class CustomPutNextLocal(RoomGridLevel):
     """
 
     ## Description
