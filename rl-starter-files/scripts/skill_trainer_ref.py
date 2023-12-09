@@ -10,14 +10,15 @@ import utils
 from utils import device
 from model import ACModel
 #? from torch_ac.utils.penv import ParallelEnv
-from curriculum import get_curriculum
+from curriculum import Curriculum
 
 # Parse arguments
 parser = argparse.ArgumentParser()
 
-# parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
-
 # General parameters
+parser.add_argument("--algo", default="ppo", help="algorithm to use: a2c | ppo (REQUIRED)")
+
+parser.add_argument("--env", default="BabyAI-GoToRedBallGreyS8N2", help="name of the environment to train on (REQUIRED)")
 parser.add_argument("--model", default=None, help="name of the model (default: {ENV}_{ALGO}_{TIME})")
 parser.add_argument("--seed", type=int, default=1, help="random seed (default: 1)")
 parser.add_argument("--log-interval",
@@ -29,6 +30,7 @@ parser.add_argument("--save-interval",
                     default=15,
                     help="number of updates between two saves (vanilla default: 10, 0 means no saving)")
 parser.add_argument("--procs", type=int, default=64, help="number of processes (vanilla default: 16)")
+parser.add_argument("--frames", type=int, default=10**7, help="number of frames of training (default: 1e7)")
 parser.add_argument("--obs-size",
                     type=int,
                     default=11,
@@ -63,79 +65,15 @@ parser.add_argument(
 parser.add_argument("--text", action="store_true", default=True, help="add a GRU to the model to handle text input")
 
 # Parameters for curriculum learning
-parser.add_argument("--frames",
-                    type=int,
-                    default=10**7,
-                    help="number of frames of training (default: 1e7), total steps for the curriculum learning")
-parser.add_argument("--update-interval",default=15, type=int, help="number of frames between two updates (default: 1000)")
 # find and fourrooms may be removed
 parser.add_argument("--skill",
                     required=True,
                     default="goto",
                     help="name of the environment to train on (REQUIRED)",
                     choices=['goto', 'pickup', 'open', 'putnext', 'unlock', 'find', 'fourrooms'])
-parser.add_argument("--upgrade-threshold",
-                    type=float,
-                    default=0.6,
-                    help="upgrade threshold for curriculum learning (default: 0.6)")
-parser.add_argument("--downgrade-threshold",
-                    type=float,
-                    default=0.3,
-                    help="downgrade threshold for curriculum learning (default: 0.3)")
-parser.add_argument("--repeat-threshold",
-                    type=int,
-                    default=5,
-                    help="repeat threshold for curriculum learning (default: 5)")
-
-
-def load_model(args, curriculum, model_dir, txt_logger, device):
-    # Load environments
-    envs = []
-    for i in range(args.procs):
-        env = curriculum.select_environment()
-        envs.append(utils.make_env(env, args.seed + 10000 * i, obs_size=args.obs_size))
-    txt_logger.info(f"Environments {env} loaded\n")
-
-    # Load training status
-    try:
-        status = utils.get_status(model_dir)
-    except OSError:
-        status = {"num_frames": 0, "update": 0}
-    txt_logger.info("Training status loaded\n")
-
-    # Load observations preprocessor
-    obs_space, preprocess_obss = utils.get_obss_preprocessor(envs[0].observation_space)
-    if "vocab" in status:
-        preprocess_obss.vocab.load_vocab(status["vocab"])
-    txt_logger.info("Observations preprocessor loaded")
-
-    # Load model
-    acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
-    if "model_state" in status:
-        acmodel.load_state_dict(status["model_state"])
-    acmodel.to(device)
-    txt_logger.info("Model loaded\n")
-    txt_logger.info("{}\n".format(acmodel))
-
-    # Load PPO
-    if not args.frames_per_proc:
-        args.frames_per_proc = 128
-    else:
-        reshape_reward = None
-    algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
-                            args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
-                            args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
-                            reshape_reward)
-
-    if "optimizer_state" in status:
-        algo.optimizer.load_state_dict(status["optimizer_state"])
-    txt_logger.info("Optimizer loaded\n")
-    return preprocess_obss, acmodel, algo, status
-
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    curriculum = get_curriculum(args)
     args.mem = args.recurrence > 1
 
     # Set run dir
@@ -161,8 +99,47 @@ if __name__ == "__main__":
     # Set device
     txt_logger.info(f"Device: {device}\n")
 
+    # Load environments
+    envs = []
+    for i in range(args.procs):
+        envs.append(utils.make_env(args.env, args.seed + 10000 * i, obs_size=args.obs_size))
+    txt_logger.info("Environments loaded\n")
+
+    # Load training status
+    try:
+        status = utils.get_status(model_dir)
+    except OSError:
+        status = {"num_frames": 0, "update": 0}
+    txt_logger.info("Training status loaded\n")
+
+    # Load observations preprocessor
+    obs_space, preprocess_obss = utils.get_obss_preprocessor(envs[0].observation_space)
+    if "vocab" in status:
+        preprocess_obss.vocab.load_vocab(status["vocab"])
+    txt_logger.info("Observations preprocessor loaded")
+
     # Load model
-    preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
+    acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
+    if "model_state" in status:
+        acmodel.load_state_dict(status["model_state"])
+    acmodel.to(device)
+    txt_logger.info("Model loaded\n")
+    txt_logger.info("{}\n".format(acmodel))
+
+    # Load algo
+    if not args.frames_per_proc:
+        args.frames_per_proc = 128
+    else:
+        reshape_reward = None
+    algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
+                            args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
+                            args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
+                            reshape_reward)
+
+    if "optimizer_state" in status:
+        algo.optimizer.load_state_dict(status["optimizer_state"])
+    txt_logger.info("Optimizer loaded\n")
+
     # Train model
     num_frames = status["num_frames"]
     update = status["update"]
@@ -179,13 +156,6 @@ if __name__ == "__main__":
             num_frames += logs["num_frames"]
             pbar.update(logs["num_frames"])
             update += 1
-            
-            if update % args.update_interval == 0:
-                success_rate = utils.synthesize(logs["return_per_episode"])['mean']
-                curriculum.update_level(success_rate)
-                if curriculum.if_new_env:
-                    new_env = curriculum.select_environment()
-                    preprocess_obss, acmodel, algo, status = load_model(args, curriculum, model_dir, txt_logger, device)
 
             # Print logs
             if update % args.log_interval == 0:

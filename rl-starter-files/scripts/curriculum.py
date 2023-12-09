@@ -1,3 +1,11 @@
+from envs.goto import goto_dict
+
+def get_curriculum(args):
+    if args.skill == 'goto':
+        return Curriculum(goto_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+    else:
+        raise NotImplementedError
+
 class Curriculum:
 
     def __init__(self, env_dict, upgrade_threshold=0.6, downgrade_threshold=0.3, repeat_threshold=5):
@@ -18,13 +26,18 @@ class Curriculum:
         self.env_idx = 0
         self.repeated = 0
         self.finished_levels = []
+        self.if_new = False
 
     def select_environment(self):
         """
         Selects an environment based on the current level.
         """
+        self.if_new = False
         envs_at_level = self.env_dict[self.current_level]['envs']
         return envs_at_level[self.env_idx]
+    
+    def if_new_env(self):
+        return self.if_new
 
     def update_level(self, success_rate):
         """
@@ -33,8 +46,10 @@ class Curriculum:
         # update difficulty
         if success_rate > self.upgrade_threshold and self.env_idx < len(self.env_dict[self.current_level]['envs']):
             self.env_idx += 1
+            self.if_new = True
         elif success_rate < self.downgrade_threshold and self.env_idx > 0:
             self.env_idx -= 1
+            self.if_new = True
         else:
             self.repeated += 1
 
@@ -44,6 +59,7 @@ class Curriculum:
             self.env_idx = 0
             self.current_level += 1
             self.current_level = self.current_level % len(self.env_dict.keys())
+            self.if_new = True
 
         if self.env_idx >= len(self.env_dict[self.current_level]['envs']):
             self.finished_levels.append(self.current_level)
@@ -51,10 +67,12 @@ class Curriculum:
             self.env_idx = 0
             self.current_level += 1
             self.current_level = self.current_level % len(self.env_dict.keys())
+            self.if_new = True
 
         # check if level is finished
         while self.current_level in self.finished_levels:
             self.current_level += 1
+            self.if_new = True
 
 
 if __name__ == '__main__':

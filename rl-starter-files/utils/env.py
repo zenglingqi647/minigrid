@@ -4,7 +4,6 @@ from envs.four_rooms import FourRoomsEnv
 from minigrid.wrappers import FullyObsWrapper
 from minigrid.wrappers import ViewSizeWrapper
 from envs.register import *
-from envs.goto import *
 
 def make_env(env_key, seed=None, render_mode=None, obs_size=7):
     env = gym.make(env_key)
