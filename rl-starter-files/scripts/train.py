@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--algo", required=True, help="algorithm to use: a2c | ppo (REQUIRED)")
 parser.add_argument("--env", required=True, help="name of the environment to train on (REQUIRED)")
 parser.add_argument("--model", default=None, help="name of the model (default: {ENV}_{ALGO}_{TIME})")
-parser.add_argument("--seed", typeagent_view_size=int, default=1, help="random seed (default: 1)")
+parser.add_argument("--seed", type=int, default=1, help="random seed (default: 1)")
 parser.add_argument("--log-interval", type=int, default=1, help="number of updates between two logs (default: 1)")
 parser.add_argument("--save-interval",
                     type=int,
