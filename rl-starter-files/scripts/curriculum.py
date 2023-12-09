@@ -61,8 +61,8 @@ class Curriculum:
         Updates the level and env difficulties based on the success rate.
         """
         # update success rate
-        if success_rate > self.cover[self.current_level]['envs'][self.env_idx]:
-            self.cover[self.current_level]['envs'][self.env_idx] = success_rate
+        if success_rate > self.cover[self.current_level][self.env_idx]:
+            self.cover[self.current_level][self.env_idx] = success_rate
             
         # update difficulty
         if success_rate > self.upgrade_threshold and self.env_idx < len(self.env_dict[self.current_level]['envs']):
