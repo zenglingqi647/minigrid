@@ -1,8 +1,11 @@
 from envs.goto import goto_dict
+from envs.open import open_dict
 
 def get_curriculum(args):
     if args.skill == 'goto':
         return Curriculum(goto_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+    elif args.skill == 'open':
+        return Curriculum(open_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     else:
         raise NotImplementedError
 

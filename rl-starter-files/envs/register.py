@@ -1,4 +1,4 @@
-from gymnasium.envs.registration  import register
+from gymnasium.envs.registration import register
 
 # GoTo
 register(id='BabyAI-GoToRedBallGreyS8N2', entry_point='envs.goto:GoToRedBallGreyS8N2')
@@ -25,3 +25,7 @@ register(id='BabyAI-CustomGoToObjDoorS8N4', entry_point='envs.goto:CustomGoToObj
 register(id='BabyAI-CustomGoToObjDoorS8N5', entry_point='envs.goto:CustomGoToObjDoorS8N5')
 register(id='BabyAI-CustomGoToObjDoorS8N6', entry_point='envs.goto:CustomGoToObjDoorS8N6')
 register(id='BabyAI-CustomGoToObjDoorS8N7', entry_point='envs.goto:CustomGoToObjDoorS8N7')
+
+# PickUp
+for n in range(1, 9):
+    register(id=f'BabyAI-CustomPickupLocN{n}', entry_point=f'envs.pickup:CustomPickupLocN{n}')
