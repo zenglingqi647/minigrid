@@ -19,7 +19,7 @@ python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model PutNextFinetune --skill putnext
 
 
-# baseline ppo
+# baseline ppo, debugging required
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Unlock-Baseline --obs-size -1 --skill unlock
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Goto-Baseline --obs-size -1 --skill goto
 python /data1/lzengaf/cs285/proj/minigrid/rl-starter-files/scripts/skill_trainer.py --model Open-Baseline --obs-size -1 --skill open

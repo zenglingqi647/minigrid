@@ -4,10 +4,12 @@ from minigrid.envs.babyai.core.roomgrid_level import RoomGridLevel
 from minigrid.envs.babyai.core.verifier import GoToInstr, ObjDesc
 from minigrid.envs.babyai.goto import GoToRedBallGrey, GoToRedBall, GoToRedBlueBall
 
+
 goto_dict = {
     0: {
         "name": "GoToObj",
-        "envs": ["BabyAI-GoToObjS4-v0", "BabyAI-GoToObjS6-v0", "BabyAI-GoToObj-v0"]
+        # "envs": ["BabyAI-GoToObjS4-v0", "BabyAI-GoToObjS6-v0", "BabyAI-GoToObj-v0"]
+        "envs": ["BabyAI-GoToObj-v0"]
     },
     1: {
         "name": "GoToDoor",
