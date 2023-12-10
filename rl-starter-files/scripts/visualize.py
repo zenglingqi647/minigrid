@@ -4,6 +4,9 @@ import numpy
 import utils
 from utils import device
 
+import time
+from utils.textual_minigrid import ACTION_TO_STR
+
 
 # Parse arguments
 
@@ -82,8 +85,10 @@ for episode in range(args.episodes):
         obs, reward, terminated, truncated, _ = env.step(action)
         done = terminated | truncated
         agent.analyze_feedback(reward, done)
-
+        print(ACTION_TO_STR[action])
+        time.sleep(0.5)
         if done:
+            print(f"reward is {reward}")
             break
 
 if args.gif:
