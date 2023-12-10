@@ -50,7 +50,7 @@ for i in range(0, 4):
         },
     )
     register(
-        id=f"BabyAI-CustomOpenDoor-{i}",
+        id=f"BabyAI-CustomOpenDoor-loc-{i}",
         entry_point="envs.open:CustomOpenDoor",
         kwargs={
             "select_by": "loc",

@@ -16,18 +16,6 @@ unlock_dict = {
         "name": "KeyInBox",
         "envs": ["BabyAI-KeyInBox-v0"]
     },
-    2: {
-        "name": "UnlockPickup",
-        "envs": ["BabyAI-UnblockPickup-v0"]
-    },
-    3: {
-        "name": "BlockedUnlockPickup",
-        "envs": ["BabyAI-BlockedUnlockPickup-v0"]
-    },
-    4: {
-        "name": "UnlockToUnlock",
-        "envs": ["BabyAI-UnlockToUnlock-v0"]
-    },
 }
 
 
