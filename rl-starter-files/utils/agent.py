@@ -28,7 +28,7 @@ class Agent:
         if self.acmodel.recurrent:
             self.memories = torch.zeros(self.num_envs, self.acmodel.memory_size, device=device)
 
-        self.acmodel.load_state_dict(utils.get_model_state(model_dir))
+        # self.acmodel.load_state_dict(utils.get_model_state(model_dir))
         self.acmodel.to(device)
         self.acmodel.eval()
         
