@@ -5,15 +5,15 @@ from minigrid.envs.babyai.core.levelgen import LevelGen
 pickup_dict = {
     0: {
         "name": "CustomPickupLoc",
-        "envs": [f"BabyAI-CustomPickupLocN{n}" for n in range(1, 9)]
+        "envs": [f"BabyAI-CustomPickupLocN{n}" for n in range(1, 5)]
     },
     1: {
         "name": "PickupDist",
         "envs": ["BabyAI-PickupDist-v0"]
     },
     2: {
-        "name": "PickupAbove",
-        "envs": ["BabyAI-PickupAbove-v0"]
+        "name": "CustomPickupLoc",
+        "envs": [f"BabyAI-CustomPickupLocN{n}" for n in range(5, 9)]
     },
 }
 
