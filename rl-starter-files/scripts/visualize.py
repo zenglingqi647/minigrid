@@ -37,7 +37,7 @@ parser.add_argument("--ask-every", type=int, default=500, help="how often to ask
 parser.add_argument("--obs-size",
                     type=int,
                     default=7,
-                    help="size of observation for environment, should be an odd number (default: 7)")
+                    help="size of observation for skill agents, should be an odd number (default: 7)")
 
 
 args = parser.parse_args()
@@ -51,7 +51,7 @@ utils.seed(args.seed)
 print(f"Device: {device}\n")
 
 # Load environment
-env = utils.make_env(args.env, args.seed, render_mode="human", obs_size=args.obs_size)
+env = utils.make_env(args.env, args.seed, render_mode="human", obs_size=-1)
 for _ in range(args.shift + 1):
     env.reset()
 print("Environment loaded\n")
@@ -60,7 +60,7 @@ print("Environment loaded\n")
 
 model_dir = utils.get_model_dir(args.model)
 agent = utils.Agent(env.observation_space, env.action_space, model_dir,
-                    argmax=args.argmax, use_memory=args.memory, use_text=args.text,planner_variant=args.llm_planner_variant, ask_every=args.ask_every, procs=1)
+                    argmax=args.argmax, use_memory=args.memory, use_text=args.text, planner_variant=args.llm_planner_variant, ask_every=args.ask_every, skill_obs_size=args.obs_size, procs=1)
 print("Agent loaded\n")
 
 # Run the agent
