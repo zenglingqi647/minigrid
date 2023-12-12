@@ -18,7 +18,7 @@ SKILL_MDL_PATH = [
     "storage/skill-model-v1-curriculum/OpenDoor",
     "storage/skill-model-v1-curriculum/Pickup",
     "storage/skill-model-v1-curriculum/Unlock",
-    "storage/skill-model-v1-curriculum/PutNext"
+    # "storage/skill-model-v1-curriculum/PutNext"
 ]
 
 colors = ["red", "green", "blue", "purple", "yellow", "grey"]
@@ -100,8 +100,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             self.ac_models.append(self.load_model(i))
 
         self.llm_augmented = llm_augmented
-        self.dqn_agent = DQNAgent(observation_shape=self.embedding_size, num_actions=366, discount=0.99, target_update_period=1000, use_double_q=True)
-        self.replay_buffer = ReplayBuffer()
+        self.dqn_agent = DQNAgent(observation_shape=self.embedding_size, num_actions=48, discount=0.99, target_update_period=1000, use_double_q=True)
 
         # self.lock = threading.Lock()
 
@@ -127,64 +126,54 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             p.requires_grad = True
         return mdl
 
+    def parse_action(self, action_num):
+        if action_num < 18:
+            return SKILL_LIST[0][action_num]
+        if action_num < 24:
+            return SKILL_LIST[1][action_num]
+        if action_num < 42:
+            return SKILL_LIST[2][action_num]
+        if action_num < 48:
+            return SKILL_LIST[3][action_num]
+        assert False
+
+
     def get_skills_and_goals(self, obs):
         '''
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
-        assert (obs.image.shape[0] == self.num_envs)
+        assert (obs.full_image.shape[0] == self.num_envs)
         assert (obs.text.shape[0] == self.num_envs)
-        x = obs.image.transpose(1, 3).transpose(2, 3)
-        x = self.image_conv(x)
-        x = x.reshape(x.shape[0], -1)
-        embedding = x
-        if self.use_text:
-            embed_text = self._get_embed_text(obs.text)
-            embedding = torch.cat((embedding, embed_text), dim=1)
-        action_num = self.dqn_agent.get_action(embedding)
-        skill_num, goal_str = parse_action(action_num)
-        # llm_skills: list[int] = [0] * self.num_envs
-        # llm_goals: list[int] = [None] * self.num_envs
-        # if self.llm_augmented:
-        #     if self.timer == 0:
-        #         # Iterate over batches
-        #         for idx in range(obs.image.shape[0]):
-        #             # Extract the individual image and mission texts
-        #             obs_img : torch.Tensor = obs.image[idx]
-        #             mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
-        #             print(f"Mission text sent is {mission_txt}")
 
-        #             skill_num, goal_tokens = ask_llm()
-        #             llm_skills[idx] = skill_num
-        #             llm_goals[idx] = goal_tokens
+        for idx in range(obs.full_image.shape[0]):
+            # Extract the individual image and mission texts
+            obs_img : torch.Tensor = obs.full_image[idx]
+            mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
+            print(f"Mission text sent is {mission_txt}")
+            x = obs_img.transpose(1, 3).transpose(2, 3)
+            x = self.image_conv(x)
+            x = x.reshape(x.shape[0], -1)
+            embedding = x
+            if self.use_text:
+                embed_text = self._get_embed_text(obs.text)
+                embedding = torch.cat((embedding, embed_text), dim=1)
 
-        #         self.timer = self.ask_cooldown
-        #     else:
-        #         self.timer -= 1
+            action_num = self.dqn_agent.get_action(embedding)
+            skill_num, goal_text = parse_action(action_num)
+
+            goal_tokens = []
+            for s in goal_text.split():
+                if s not in self.skill_vocabs[skill_num].vocab:
+                    print(f"Warning: unknown word {s} in mission text {goal_text}")
+                goal_tokens.append(self.skill_vocabs[skill_num][s])
+            goal_tokens = torch.IntTensor(goal_tokens).to(device)
+
+            self.current_skills[idx] = skill_num
+            self.current_goals[idx] = goal_tokens
         
         return self.current_skills, self.current_goals
 
-    def parse_action(self, action_num)
-
-    def ask_llm(self, obs_img, mission_txt):
-        try:
-            if self.llm_variant == "gpt":
-                skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
-            elif self.llm_variant == "llama":
-                skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
-            elif self.llm_variant == "human":
-                skill_num, goal_text = human_skill_planning()
-            print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
-        except Exception as e:
-            print(f"Planning failed with error {e}, using the old goal and current skill.")
-
-        goal_tokens = []
-        for s in goal_text.split():
-            if s not in self.skill_vocabs[skill_num].vocab:
-                print(f"Warning: unknown word {s} in mission text {goal_text}")
-            goal_tokens.append(self.skill_vocabs[skill_num][s])
-        goal_tokens = torch.IntTensor(goal_tokens).to(device)
-        return skill_num, goal_tokens
 
     def forward(self, obs : DictList, memory):
         # here, obs is a dictionary of batched images and batched text. The batch size is a integer multiple of the number of parallel environments.

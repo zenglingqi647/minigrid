@@ -5,6 +5,8 @@ from torch_ac.format import default_preprocess_obss
 from torch_ac.utils import DictList, ParallelEnv
 from gymnasium.vector import AsyncVectorEnv
 
+from torch_ac.algos.replay_buffer import ReplayBuffer
+
 
 class BaseAlgo(ABC):
     """The base class for RL algorithms."""
@@ -104,7 +106,7 @@ class BaseAlgo(ABC):
         self.log_reshaped_return = [0] * self.num_procs
         self.log_num_frames = [0] * self.num_procs
 
-    def collect_experiences(self):
+    def collect_experiences(self, replay_buffer = None):
         """Collects rollouts and computes advantages.
 
         Runs several environments concurrently. The next actions are computed
@@ -138,7 +140,14 @@ class BaseAlgo(ABC):
 
             obs, reward, terminated, truncated, _ = self.env.step(action.cpu().numpy())
             done = tuple(a | b for a, b in zip(terminated, truncated))
-
+            if replay_buffer != None:
+                replay_buffer.insert(
+                    observation=self.obs,
+                    action=action,
+                    reward=reward,
+                    done=done,
+                    next_observation=obs,
+                )
             # Update experiences values
 
             self.obss[i] = self.obs

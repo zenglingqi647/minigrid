@@ -14,6 +14,8 @@ from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
 from minigrid.wrappers import PositionBonus
 
+from torch_ac.algos.replay_buffer import ReplayBuffer
+
 # Parse arguments
 parser = argparse.ArgumentParser()
 
@@ -82,6 +84,58 @@ parser.add_argument("--custom-hw",
                     type=int,
                     help="customize the height and width of the Minigrid-FourRooms gridworld, h==w")
 
+# Parameter for DQN Planner
+parser.add_argument("--use-dqn",
+                    action="store_true",
+                    default=False,
+                    help="if dqn planner is used")
+parser.add_argument("--llm-augmented",
+                    action="store_true",
+                    default=False,
+                    help="if dqn planner is going to be llm augmented")
+
+
+
+# llm_skills: list[int] = [0] * self.num_envs
+# llm_goals: list[int] = [None] * self.num_envs
+# if self.llm_augmented:
+#     if self.timer == 0:
+#         # Iterate over batches
+#         for idx in range(obs.image.shape[0]):
+#             # Extract the individual image and mission texts
+#             obs_img : torch.Tensor = obs.image[idx]
+#             mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
+#             print(f"Mission text sent is {mission_txt}")
+
+#             skill_num, goal_tokens = ask_llm()
+#             llm_skills[idx] = skill_num
+#             llm_goals[idx] = goal_tokens
+
+#         self.timer = self.ask_cooldown
+#     else:
+#         self.timer -= 1
+
+def ask_llm(self, obs_img, mission_txt):
+    try:
+        if self.llm_variant == "gpt":
+            skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+        elif self.llm_variant == "llama":
+            skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
+        elif self.llm_variant == "human":
+            skill_num, goal_text = human_skill_planning()
+        print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
+    except Exception as e:
+        print(f"Planning failed with error {e}, using the old goal and current skill.")
+
+    goal_tokens = []
+    for s in goal_text.split():
+        if s not in self.skill_vocabs[skill_num].vocab:
+            print(f"Warning: unknown word {s} in mission text {goal_text}")
+        goal_tokens.append(self.skill_vocabs[skill_num][s])
+    goal_tokens = torch.IntTensor(goal_tokens).to(device)
+    return skill_num, goal_tokens
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
@@ -145,6 +199,8 @@ if __name__ == "__main__":
     # Load model
     if args.llm_planner_variant is not None:
         acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
+    elif args.use_dqn:
+        acmodel = QPlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text, num_skills=5, llm_augmented=args.llm_augmented)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
@@ -188,11 +244,19 @@ if __name__ == "__main__":
     update = status["update"]
     start_time = time.time()
     total_frames = num_frames + args.frames
+
+    if args.use_dqn:
+        replay_buffer = ReplayBuffer()
+
+
     with tqdm(initial=num_frames, total=total_frames) as pbar:
         while num_frames < total_frames:
             # Update model parameters
             update_start_time = time.time()
-            exps, logs1 = algo.collect_experiences()
+            if args.use_dqn:
+                exps, logs1 = algo.collect_experiences(replay_buffer = replay_buffer)
+            else:
+                exps, logs1 = algo.collect_experiences()
             logs2 = algo.update_parameters(exps)
             logs = {**logs1, **logs2}
             update_end_time = time.time()
