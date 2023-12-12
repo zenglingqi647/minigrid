@@ -47,6 +47,28 @@ def parse_goal(skill, goal):
 
     return None  # Return None if no match is found
 
+
+def validate_goal(skill, goal):
+    if not parse_goal(skill, goal):
+        raise ValueError('Goal and skill mismatch!')
+
+
+def similarity(llm_skill, llm_goal, dqn_skill, dqn_goal):
+    llm_return = parse_goal(llm_skill, llm_goal)
+    dqn_return = parse_goal(dqn_skill, dqn_goal)
+
+    if not llm_return:
+        raise ValueError('LLM: Goal and skill mismatch!')
+    if not dqn_return:
+        raise ValueError('DQN: Goal and skill mismatch!')
+
+    # compare the skill, colors and types
+    similarity = []
+    for key in llm_return.keys():
+        similarity.append(llm_return[key] == dqn_return[key])
+    return sum(similarity) / len(similarity)
+
+
 # TODO: validation, similarity
 if __name__ == "__main__":
     skill = 0
@@ -73,3 +95,8 @@ if __name__ == "__main__":
     goal = "Go to the red goal"
     parsed_goal = parse_goal(skill, goal)
     print(parsed_goal)
+
+    print(similarity(0, "Go to the red ball", 0, "Go to the red ball"), 1)
+    print(similarity(0, "Go to the red ball", 0, "Go to the green ball"), 0.67)
+    print(similarity(0, "Go to the red ball", 1, "Go to the red box"), 'error')
+    print(similarity(0, "Go to the red ball", 0, "Go to the red box"), 0)
