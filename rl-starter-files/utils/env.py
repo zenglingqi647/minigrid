@@ -13,7 +13,7 @@ from minigrid.core.constants import COLOR_TO_IDX, OBJECT_TO_IDX
 
 def make_env(env_key, seed=None, render_mode=None, obs_size=7):
     '''
-    obs_size: 0 for partial 7 and full observation. obs['full_image'] is the full observation.
+    obs_size: 0 for partial 7 and full observation. obs['full_obs'] is the full observation.
     obs_size: -1 for fully observable
     '''
     if render_mode:
@@ -90,7 +90,7 @@ class PartialFullWrapper(ObservationWrapper):
         # Encode the partially observable view into a numpy array
         image = grid.encode(vis_mask)
 
-        return {**obs, "image": image, "full_image": full_grid}
+        return {**obs, "image": image, "full_obs": full_grid}
 
 
 if __name__ == "__main__":
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     print(obs['image'].shape)
     env = PartialFullWrapper(env, agent_view_size=11)
     obs, _ = env.reset()
-    print(obs['full_image'].shape)
+    print(obs['full_obs'].shape)
     env = FullyObsWrapper(env)
     obs, _ = env.reset()
     print(obs['image'].shape)

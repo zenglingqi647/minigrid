@@ -28,7 +28,9 @@ def get_obss_preprocessor(obs_space):
         def preprocess_obss(obss, device=None):
             return torch_ac.DictList({
                 "image": preprocess_images([obs["image"] for obs in obss], device=device),
-                "text": preprocess_texts([obs["mission"] for obs in obss], vocab, device=device)
+                "text": preprocess_texts([obs["mission"] for obs in obss], vocab, device=device),
+                
+                "full_obs": preprocess_images([obs["full_obs"] for obs in obss], device=device)
             })
 
         preprocess_obss.vocab = vocab
