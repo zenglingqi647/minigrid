@@ -47,7 +47,7 @@ def parse_goal(skill, goal):
 
     return None  # Return None if no match is found
 
-
+# TODO: validation, similarity
 if __name__ == "__main__":
     skill = 0
     goal = "Go to the red ball"
