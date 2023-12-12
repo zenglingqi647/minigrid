@@ -95,16 +95,16 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
-        assert (obs.full_image.shape[0] == self.num_envs)
+        assert (obs.full_obs.shape[0] == self.num_envs)
         assert (obs.text.shape[0] == self.num_envs)
 
         if self.timer == 0:
 
             # Iterate over batches
-            for idx in range(obs.full_image.shape[0]):
+            for idx in range(obs.full_obs.shape[0]):
 
                 # Extract the individual image and mission texts
-                obs_img : torch.Tensor = obs.full_image[idx]
+                obs_img : torch.Tensor = obs.full_obs[idx]
                 mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
                 print(f"Mission text sent is {mission_txt}")
 
