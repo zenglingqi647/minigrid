@@ -1,4 +1,4 @@
-from envs.goto import goto_dict
+from envs.goto import GOTO_DICT
 from envs.open import OPEN_DICT
 from envs.pickup import PICKUP_DICT
 from envs.putnext import PUTNEXT_DICT
@@ -7,7 +7,7 @@ from envs.unlock import UNLOCK_DICT
 
 def get_curriculum(args):
     if args.skill == 'goto':
-        return Curriculum(goto_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+        return Curriculum(GOTO_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'open':
         return Curriculum(OPEN_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'pickup':
