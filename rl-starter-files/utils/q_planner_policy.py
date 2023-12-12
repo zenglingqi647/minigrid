@@ -14,10 +14,10 @@ from utils.dqn_agent import DQNAgent
 
 
 SKILL_MDL_PATH = [
-    "storage/skill-model-v1-curriculum/GoToObj",
-    "storage/skill-model-v1-curriculum/OpenDoor",
-    "storage/skill-model-v1-curriculum/Pickup",
-    "storage/skill-model-v1-curriculum/Unlock",
+    "storage/skill-model-v2/Goto-Finetune",
+    "storage/skill-model-v2/Open",
+    "storage/skill-model-v2/PickUp",
+    "storage/skill-model-v2/Unlock-Finetune",
     # "storage/skill-model-v1-curriculum/PutNext"
 ]
 
@@ -48,7 +48,7 @@ SKILL_LIST = [GO_TO, OPEN, PICK_UP, UNLOCK, PUT_NEXT]
 class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=5, llm_augmented=False):
+    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=4, llm_augmented=False):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
@@ -100,7 +100,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             self.ac_models.append(self.load_model(i))
 
         self.llm_augmented = llm_augmented
-        self.dqn_agent = DQNAgent(observation_shape=self.embedding_size, num_actions=48, discount=0.99, target_update_period=1000, use_double_q=True)
+        self.dqn_agent = DQNAgent(observation_shape=(self.embedding_size, 1), num_actions=48, discount=0.99, target_update_period=1000, use_double_q=True)
 
         # self.lock = threading.Lock()
 
