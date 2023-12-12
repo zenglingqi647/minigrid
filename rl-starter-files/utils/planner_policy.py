@@ -9,6 +9,7 @@ from torch_ac.utils.dictlist import DictList
 import torch_ac
 from torch.distributions import Categorical
 from .other import device
+from utils.prompt_validation import parse_goal
 
 
 SKILL_MDL_PATH = [
@@ -91,7 +92,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             p.requires_grad = True
         return mdl
 
-    def get_skills_and_goals(self, obs):
+    def get_skills_and_goals(self, obs : DictList):
         '''
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
@@ -113,16 +114,17 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 # Ask the LLM planner
                 try:
                     if self.llm_variant == "gpt":
-                        skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                        skill_num, goal_text = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
                     elif self.llm_variant == "llama":
-                        skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
+                        skill_num, goal_text = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
                     elif self.llm_variant == "human":
                         skill_num, goal_text = human_skill_planning()
                     # TODO
                     # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
                     print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
                 except Exception as e:
-                    print(f"Planning failed with error {e}, using the old goal and current skill.")
+                    print("Planning failed, using the old goal and current skill. The following is the error message:")
+                    print(e)
                     return self.current_skills, self.current_goals
 
                 # Store the skill numbers and goal tokens returned by the planner

@@ -104,11 +104,11 @@ Your agent would like to {act}. Evaluate how this state and action is helpful fo
 '''
 
 def get_planning_prompt_str(obs_img, mission_txt):
-    room_r, room_c = get_agent_position(obs['image'])
-    image, direction, mission = img_to_str(obs_img), DIR_TO_STR[obs['direction']], mission_txt
-    return f'''You are an agent in a Minigrid environment. Your agent's direction is currently {direction}. Your agent is in Room {(room_r, room_c)}. Rooms are 7 by 7, and there are 9 of them, connected by doors. Your mission is {mission}. Here is the state of the entire environment: 
+    room_r, room_c = get_agent_position(obs_img)
+    image_as_str, mission = img_to_str(obs_img), mission_txt
+    return f'''You are an agent in a Minigrid environment. Your agent is in Room {(room_r, room_c)}. Rooms are 7 by 7, and there are 9 of them, connected by doors. Your mission is {mission}. Here is the state of the entire environment: 
     
-    {image}
+    {image_as_str}
 
 You have the following skills and their allowed goal grammar below:
 Skill 0: Go to Object
@@ -126,16 +126,17 @@ Skill 3: Unlock a door
     "unlock the [color] [type]"
     [color]: the color of the object. Allowed values are "red", "green", "blue", "purple", "yellow" or "grey".
 
-Based on the current state of the agent, what is the first skill it should use, and what would be the subgoal for that skill? Use the format "Answer: Skill [a number from 0 to 3], Goal [describe the goal]".
+Based on the current state of the agent, what is the first skill it should use, and what would be the short-term goal for that skill (most likely different from the long-term) ? Use the format "Answer: Skill [a number from 0 to 3], Goal [describe the goal].". No need to put quotes around the goal.
 '''
 
-def gpt_skill_planning(obs, mission_txt):
-    prompt = get_planning_prompt_str(obs, mission_txt)
+def gpt_skill_planning(obs_img, mission_txt):
+    prompt = get_planning_prompt_str(obs_img, mission_txt)
     response = interact_with_gpt(prompt)
-    match = re.search(r'Answer: Skill (\d)', response)
+    match = re.search(r'Answer: Skill (\d), Goal (.+)\.', response)
     if match:
         skill = int(match.group(1))
-        return skill
+        goal = match.group(2)
+        return skill, goal
     else:
         raise Exception("The language model did not generate a valid response.")
 
