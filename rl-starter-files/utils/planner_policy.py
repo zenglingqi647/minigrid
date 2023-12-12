@@ -24,14 +24,14 @@ SKILL_MDL_PATH = [
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=7):
+    def __init__(self, skill_obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=7):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
         self.use_text = use_text
 
-        n = obs_space["image"][0]
-        m = obs_space["image"][1]
+        n = skill_obs_space["image"][0]
+        m = skill_obs_space["image"][1]
         self.image_embedding_size = ((n-1)//2-2)*((m-1)//2-2)*64
 
         if self.use_text:
@@ -42,7 +42,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         if self.use_text:
             self.embedding_size += self.text_embedding_size
 
-        self.obs_space = obs_space
+        self.skill_obs_space = skill_obs_space
         self.action_space = action_space
         self.num_skills = num_skills
         self.ac_models = nn.ModuleList()
@@ -73,9 +73,13 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     
     def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False):
         return
+    
+    def state_dict(self):
+        ''' Planner policy does not need state. '''
+        return {}
 
     def load_model(self, index):
-        mdl = ACModel(self.obs_space, self.action_space, self.use_memory, self.use_text)
+        mdl = ACModel(self.skill_obs_space, self.action_space, self.use_memory, self.use_text)
         p = Path(SKILL_MDL_PATH[index], "status.pt")
         with open(p, "rb") as f:
             status = torch.load(f)
