@@ -21,9 +21,10 @@ SKILL_MDL_PATH = [
     "storage/skill-model-v1-curriculum/PutNext"
 ]
 
-GO_TO = {0: "go to the red ball", 1: "go to the green ball", 2: "go to the blue ball", 3: "go to the purple ball", 4: "go to the yellow ball", 5: "go to the grey ball", 
-6: "go to the red box", 7: "go to the green box", 8: "go to the blue box", 9: "go to the purple box", 10: "go to the yellow box", 11: "go to the grey box", 
-12: "go to the red key", 13: "go to the green key", 14: "go to the blue key", 15: "go to the purple key", 16: "go to the yellow key", 17: "go to the grey key"}
+colors = ["red", "green", "blue", "purple", "yellow", "grey"]
+objects = ["ball", "box", "key"]
+
+GO_TO = {i + j * 6: f"go to the {colors[i]} {objects[j]}" for j in range(len(objects)) for i in range(len(colors))}
 
 OPEN = {18: "open the red door", 19: "open the green door", 20: "open the blue door", 21: "open the purple door", 22: "open the yellow door", 23: "open the grey door"}
 
@@ -37,9 +38,8 @@ UNLOCK = {42: "open the red door", 43: "open the green door", 44: "open the blue
 # 54: "put the green ball next to the red ball", 55: "put the green ball next to the green ball", 56: "put the green ball next to the blue ball", 57: "put the green ball next to the purple ball", 58: "put the green ball next to the yellow ball", 59: "put the green ball next to the grey ball",
 
 # }
-COLOR = ["red", "green", "blue", "purple", "yellow", "grey"]
-OBJ = ["ball", "box", "key"]
-PUT_NEXT = "put the {0} {1} next to the {2} {3}"
+
+PUT_NEXT = f"put the {0} {1} next to the {2} {3}"
 
 # In total, there are 18 + 6 + 18 + 6 + 6 * 3 * 6 * 3 = 366 configurations.
 
