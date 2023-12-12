@@ -106,7 +106,7 @@ class BaseAlgo(ABC):
         self.log_reshaped_return = [0] * self.num_procs
         self.log_num_frames = [0] * self.num_procs
 
-    def collect_experiences(self, replay_buffer = None):
+    def collect_experiences(self, replay_buffer=None):
         """Collects rollouts and computes advantages.
 
         Runs several environments concurrently. The next actions are computed
@@ -126,7 +126,6 @@ class BaseAlgo(ABC):
             Useful stats about the training process, including the average
             reward, policy loss, value loss, etc.
         """
-
         for i in range(self.num_frames_per_proc):
             # Do one agent-environment interaction
 

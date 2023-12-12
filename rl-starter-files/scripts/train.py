@@ -5,6 +5,7 @@ import torch_ac
 import tensorboardX
 import sys
 from tqdm import tqdm
+from torch_ac import ReplayBuffer
 
 import utils
 from utils import device
