@@ -12,19 +12,17 @@ from .other import device
 
 
 SKILL_MDL_PATH = [
-    "storage/skill-model-v1-curriculum/GoToObj",
+    "storage/skill-model-v2/GoTo",
     "storage/skill-model-v1-curriculum/OpenDoor",
-    "storage/skill-model-v1-curriculum/Pickup",
-    "storage/skill-model-v1-curriculum/PutNext",
-    "storage/skill-model-v1-curriculum/Unlock",
-    "storage/skill-model-v1-curriculum/FindObj",
-    "storage/skill-model-v1-curriculum/FourRooms"
+    "storage/skill-model-v2/PickUp",
+    "storage/skill-model-v2/PutNext",
+    "storage/skill-model-v2/Unlock-Finetune",
 ]
 
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, skill_obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=7):
+    def __init__(self, skill_obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=5):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory
@@ -97,16 +95,16 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
-        assert (obs.image.shape[0] == self.num_envs)
+        assert (obs.full_image.shape[0] == self.num_envs)
         assert (obs.text.shape[0] == self.num_envs)
 
         if self.timer == 0:
 
             # Iterate over batches
-            for idx in range(obs.image.shape[0]):
+            for idx in range(obs.full_image.shape[0]):
 
                 # Extract the individual image and mission texts
-                obs_img : torch.Tensor = obs.image[idx]
+                obs_img : torch.Tensor = obs.full_image[idx]
                 mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
                 print(f"Mission text sent is {mission_txt}")
 

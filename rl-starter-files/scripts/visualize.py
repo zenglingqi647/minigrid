@@ -1,5 +1,6 @@
 import argparse
 import numpy
+import pygame
 
 import utils
 from utils import device
@@ -51,7 +52,7 @@ utils.seed(args.seed)
 print(f"Device: {device}\n")
 
 # Load environment
-env = utils.make_env(args.env, args.seed, render_mode="human", obs_size=-1)
+env = utils.make_env(args.env, args.seed, render_mode="human", obs_size=0)
 for _ in range(args.shift + 1):
     env.reset()
 print("Environment loaded\n")
@@ -75,8 +76,9 @@ env.render()
 
 for episode in range(args.episodes):
     obs, _ = env.reset()
+    running = True
 
-    while True:
+    while running:
         env.render()
         if args.gif:
             frames.append(numpy.moveaxis(env.get_frame(), 2, 0))
@@ -90,6 +92,14 @@ for episode in range(args.episodes):
         if done:
             print(f"reward is {reward}")
             break
+
+        for event in pygame.event.get():
+            # checking if keydown event happened or not
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    print("skipped, reward is 0.")
+                    running = False
+                    break
 
 if args.gif:
     print("Saving gif... ", end="")

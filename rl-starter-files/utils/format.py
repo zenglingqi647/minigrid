@@ -26,10 +26,14 @@ def get_obss_preprocessor(obs_space):
         vocab = Vocabulary(obs_space["text"])
 
         def preprocess_obss(obss, device=None):
-            return torch_ac.DictList({
+            dicts = {
                 "image": preprocess_images([obs["image"] for obs in obss], device=device),
                 "text": preprocess_texts([obs["mission"] for obs in obss], vocab, device=device)
-            })
+            }
+            if "full_image" in obss[0]:
+                dicts["full_image"] = preprocess_images([obs["full_image"] for obs in obss], device=device)
+            obs_preprocessed = torch_ac.DictList(dicts)
+            return obs_preprocessed
 
         preprocess_obss.vocab = vocab
 
