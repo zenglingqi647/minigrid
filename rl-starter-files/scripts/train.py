@@ -2,6 +2,7 @@ import argparse
 import time
 import datetime
 import torch_ac
+from torch_ac import DictList
 import tensorboardX
 import sys
 from tqdm import tqdm
@@ -242,13 +243,13 @@ if __name__ == "__main__":
                 next_full_obs, next_text = [], []
                 for i in range(args.batch_size):
                     obs_dict, next_obs_dict = batch["observations"][i], batch["next_observations"][i]
-                    full_obs.append(obs_dict.full_obs)
+                    full_obs.append(obs_dict.full_obs.float())
                     text.append(obs_dict.text)
-                    next_full_obs.append(next_obs_dict.full_obs)
+                    next_full_obs.append(next_obs_dict.full_obs.float())
                     next_text.append(next_obs_dict.text)
-
-                obs = {"full_obs" : torch.stack(full_obs).float(), "text" : torch.stack(text) }
-                next_obs = {"full_obs" : torch.stack(next_full_obs).float(), "text" : torch.stack(next_text) }
+                
+                obs = DictList({ "full_obs" : torch.stack(full_obs), "text" : torch.stack(text) })
+                next_obs = DictList({"full_obs" : torch.stack(next_full_obs), "text" : torch.stack(next_text) })
                 rewards = ptu.from_numpy(batch["rewards"])
                 dones = ptu.from_numpy(batch["dones"])
                 actions = ptu.from_numpy(batch["actions"])
@@ -261,14 +262,15 @@ if __name__ == "__main__":
                 # TODO: when using the critic network, we directly pass in the embeddings (processed already by the CNN and GRU and concatenated together)
                 # When doing the target critic, we probably also want the same thing?
                 obs_embedded, next_obs_embedded = acmodel.get_embeddings(obs), acmodel.get_embeddings(next_obs)
-                acmodel.dqn_agent.update(            
+                dqn_log = acmodel.dqn_agent.update(            
                     obs_embedded,
-                    batch["actions"],
+                    actions,
                     rewards,
                     next_obs_embedded,
-                    batch["dones"],
+                    dones,
                     update,
                 )
+                logs.update(dqn_log)
 
 
             # Print logs
@@ -288,9 +290,17 @@ if __name__ == "__main__":
                 header += ["entropy", "value", "policy_loss", "value_loss", "grad_norm"]
                 data += [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
 
-                txt_logger.info(
-                    "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
-                    .format(*data))
+                if args.use_dqn:
+                    header += ["critic_loss", "q_values", "target_values"]
+                    data += [logs["critic_loss"], logs["q_values"], logs["target_values"]]
+
+                    txt_logger.info(
+                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f} | criticL {:.3f} | Q {:.3f} | targetQ {:.3f} "
+                        .format(*data))
+                else:
+                    txt_logger.info(
+                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
+                        .format(*data))
 
                 header += ["return_" + key for key in return_per_episode.keys()]
                 data += return_per_episode.values()
