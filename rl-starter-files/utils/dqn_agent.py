@@ -60,8 +60,6 @@ class DQNAgent(nn.Module):
         """
         Used for evaluation.
         """
-        observation = ptu.from_numpy(np.asarray(observation))[None]
-
         # TODO(student): get the action from the critic using an epsilon-greedy strategy
         # raise NotImplementedError
         if torch.rand(1) < epsilon:
@@ -70,7 +68,7 @@ class DQNAgent(nn.Module):
             qa_values: torch.Tensor = self.critic(observation)
             action = qa_values.argmax(dim=-1)
 
-        return ptu.to_numpy(action).squeeze(0).item()
+        return ptu.to_numpy(action)
 
     def compute_critic_loss(
         self,

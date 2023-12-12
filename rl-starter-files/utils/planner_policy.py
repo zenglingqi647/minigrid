@@ -106,6 +106,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
 
                 # Extract the individual image and mission texts
                 obs_img : torch.Tensor = obs.full_obs[idx]
+                self.invert_vocab : dict = {v: k for k, v in self.vocab.items()}
                 mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
                 print(f"Mission text sent is {mission_txt}")
 
@@ -150,11 +151,11 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             # Need to gather the dist, value, and memory
             for j in range(self.num_envs):
                 skill_num, goal = current_skills[j], current_goals[j]
-                obs_one_step = obs_one_step[j:j + 1]
+                obs_one_env = obs_one_step[j:j + 1]
                 memory_one_step = memory[i + j:i + j + 1]
 
                 # Use the same image observation but change the goal
-                new_obs = DictList({"image" : obs_one_step.image, "text" : goal.unsqueeze(0)})
+                new_obs = DictList({"image" : obs_one_env.image, "text" : goal.unsqueeze(0)})
                 d, v, m = self.ac_models[skill_num](new_obs, memory_one_step)
 
                 dist_logits.append(d.logits)

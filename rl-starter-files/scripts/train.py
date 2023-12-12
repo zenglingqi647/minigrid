@@ -9,6 +9,7 @@ from tqdm import tqdm
 import utils
 from utils import device
 from model import ACModel
+import utils.pytorch_util as ptu
 from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
@@ -134,6 +135,7 @@ if __name__ == "__main__":
 
     # Set device
     txt_logger.info(f"Device: {device}\n")
+    ptu.init_gpu()
 
     # Load environments
     envs = []
@@ -160,12 +162,12 @@ if __name__ == "__main__":
     txt_logger.info("Observations preprocessor loaded")
 
     # Load model
-    if args.llm_planner_variant is not None:
-        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
-    elif args.use_dqn:
+    if args.use_dqn:
         acmodel = QPlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text, num_skills=4, llm_augmented=args.llm_augmented)
         if args.llm_augmented:
             llm_model = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
+    elif args.llm_planner_variant is not None:
+        acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
@@ -240,11 +242,13 @@ if __name__ == "__main__":
                     dqn_rsp = acmodel.get_skills_and_goals(batch["observations"])
                     rewards = rewards + similarity_bonus(llm_rsp, dqn_rsp)
 
+                # TODO: when using the critic network, we directly pass in the embeddings (processed already by the CNN and GRU and concatenated together)
+                # When doing the target critic, we probably also want the same thing?
                 acmodel.dqn_agent.update(            
-                    batch["observations"],
+                    batch["observations"].float(),
                     batch["actions"],
                     rewards,
-                    batch["next_observations"],
+                    batch["next_observations"].float(),
                     batch["dones"],
                     update,
                 )

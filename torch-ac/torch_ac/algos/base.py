@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import torch
-
+import numpy as np
 from torch_ac.format import default_preprocess_obss
 from torch_ac.utils import DictList, ParallelEnv
 from gymnasium.vector import AsyncVectorEnv
@@ -140,13 +140,16 @@ class BaseAlgo(ABC):
             obs, reward, terminated, truncated, _ = self.env.step(action.cpu().numpy())
             done = tuple(a | b for a, b in zip(terminated, truncated))
             if replay_buffer != None:
-                replay_buffer.insert(
-                    observation=self.obs,
-                    action=action,
-                    reward=reward,
-                    done=done,
-                    next_observation=obs,
-                )
+                for idx in range(len(obs)):
+                    replay_buffer.insert(
+                        observation=np.array(self.obs[idx]['full_obs']),
+                        action=action[idx].item(),
+                        reward=reward[idx],
+                        done=done[idx],
+                        next_observation=np.array(obs[idx]['full_obs']),
+                    )
+                # TODO: replay buffer here should just insert the fully observed stuff
+
             # Update experiences values
 
             self.obss[i] = self.obs
