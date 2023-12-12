@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from minigrid.envs.babyai.core.levelgen import LevelGen
 
-pickup_dict = {
+PICKUP_DICT = {
     0: {
         "name": "PickupDist",
         "envs": ["BabyAI-PickupDist-v0"]

@@ -13,8 +13,8 @@ from minigrid.core.constants import COLOR_TO_IDX, OBJECT_TO_IDX
 
 def make_env(env_key, seed=None, render_mode=None, obs_size=7):
     '''
-    obs_size: 0 for partial 7 and full observation. obs['full_obs'] is the full observation.
-    obs_size: -1 for fully observable
+    obs_size: 0 for partial and fully observations at the same time, positive integers for partial observation. obs['full_obs'] is the full observation.
+    obs_size: -1 for fully observation only
     '''
     if render_mode:
         env = gym.make(env_key, render_mode=render_mode)

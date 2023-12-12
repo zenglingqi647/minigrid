@@ -3,7 +3,7 @@ from __future__ import annotations
 from minigrid.envs.babyai.core.roomgrid_level import RoomGridLevel
 from minigrid.envs.babyai.core.verifier import ObjDesc, OpenInstr
 
-unlock_dict = {
+UNLOCK_DICT = {
     0: {
         "name":
             "UnlockLocal",
