@@ -5,7 +5,7 @@ from torch import nn
 
 import numpy as np
 
-import pytorch_util as ptu
+import utils.pytorch_util as ptu
 
 def make_critic(observation_shape: Tuple[int, ...], num_actions: int) -> nn.Module:
         return ptu.build_mlp(
@@ -22,10 +22,6 @@ def make_lr_schedule(
     optimizer: torch.optim.Optimizer,
 ) -> torch.optim.lr_scheduler._LRScheduler:
     return torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1.0)
-
-exploration_schedule = ConstantSchedule(
-    0.3
-)
 
 class DQNAgent(nn.Module):
     def __init__(

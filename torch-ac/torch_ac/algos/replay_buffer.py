@@ -1,4 +1,4 @@
-import np
+import numpy as np
 
 class ReplayBuffer:
     def __init__(self, capacity=1000000):

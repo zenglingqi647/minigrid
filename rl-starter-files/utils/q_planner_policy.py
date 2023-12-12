@@ -9,8 +9,8 @@ import torch_ac
 from torch.distributions import Categorical
 from .other import device
 
-from replay_buffer import ReplayBuffer
-from dqn_agent import DQNAgent
+from torch_ac.algos.replay_buffer import ReplayBuffer
+from utils.dqn_agent import DQNAgent
 
 
 SKILL_MDL_PATH = [

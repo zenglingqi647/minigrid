@@ -5,7 +5,6 @@ import torch_ac
 import tensorboardX
 import sys
 from tqdm import tqdm
-from torch_ac import ReplayBuffer
 
 import utils
 from utils import device
@@ -13,6 +12,7 @@ from model import ACModel
 from utils.trajectory_reward import LLMRewardFunction
 from utils.textual_minigrid import GPTRewardFunction
 from utils.planner_policy import PlannerPolicy
+from utils.q_planner_policy import QPlannerPolicy
 from minigrid.wrappers import PositionBonus
 
 from torch_ac.algos.replay_buffer import ReplayBuffer
