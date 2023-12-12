@@ -146,6 +146,9 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         assert (obs.full_image.shape[0] == self.num_envs)
         assert (obs.text.shape[0] == self.num_envs)
 
+        current_skills : list[int] = [0] * self.num_envs
+        current_goals : list[int] = [None] * self.num_envs
+
         for idx in range(obs.full_image.shape[0]):
             # Extract the individual image and mission texts
             obs_img : torch.Tensor = obs.full_image[idx]
@@ -169,10 +172,10 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 goal_tokens.append(self.skill_vocabs[skill_num][s])
             goal_tokens = torch.IntTensor(goal_tokens).to(device)
 
-            self.current_skills[idx] = skill_num
-            self.current_goals[idx] = goal_tokens
+            current_skills[idx] = skill_num
+            current_goals[idx] = goal_tokens
         
-        return self.current_skills, self.current_goals
+        return current_skills, current_goals
 
 
     def forward(self, obs : DictList, memory):
@@ -183,7 +186,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         for i in range(0, len(obs), self.num_envs):
             obs_one_step = obs[i:i + self.num_envs]
             current_skills, current_goals = self.get_skills_and_goals(obs_one_step)
-
+            self.current_skills, self.current_goals = current_skills, current_goals
             # Iterate over skill and goal token pairs
             # Need to gather the dist, value, and memory
             for j in range(self.num_envs):

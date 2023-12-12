@@ -96,46 +96,8 @@ parser.add_argument("--llm-augmented",
                     help="if dqn planner is going to be llm augmented")
 
 
-
-# llm_skills: list[int] = [0] * self.num_envs
-# llm_goals: list[int] = [None] * self.num_envs
-# if self.llm_augmented:
-#     if self.timer == 0:
-#         # Iterate over batches
-#         for idx in range(obs.image.shape[0]):
-#             # Extract the individual image and mission texts
-#             obs_img : torch.Tensor = obs.image[idx]
-#             mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
-#             print(f"Mission text sent is {mission_txt}")
-
-#             skill_num, goal_tokens = ask_llm()
-#             llm_skills[idx] = skill_num
-#             llm_goals[idx] = goal_tokens
-
-#         self.timer = self.ask_cooldown
-#     else:
-#         self.timer -= 1
-
-def ask_llm(self, obs_img, mission_txt):
-    try:
-        if self.llm_variant == "gpt":
-            skill_num = gpt_skill_planning(obs_img.cpu().numpy(), mission_txt)
-        elif self.llm_variant == "llama":
-            skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
-        elif self.llm_variant == "human":
-            skill_num, goal_text = human_skill_planning()
-        print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
-    except Exception as e:
-        print(f"Planning failed with error {e}, using the old goal and current skill.")
-
-    goal_tokens = []
-    for s in goal_text.split():
-        if s not in self.skill_vocabs[skill_num].vocab:
-            print(f"Warning: unknown word {s} in mission text {goal_text}")
-        goal_tokens.append(self.skill_vocabs[skill_num][s])
-    goal_tokens = torch.IntTensor(goal_tokens).to(device)
-    return skill_num, goal_tokens
-
+def similarity_bonus(llm_rsp, dqn_rsp):
+    return 0
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -202,6 +164,7 @@ if __name__ == "__main__":
         acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
     elif args.use_dqn:
         acmodel = QPlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text, num_skills=5, llm_augmented=args.llm_augmented)
+        llm_model = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
@@ -255,7 +218,7 @@ if __name__ == "__main__":
             # Update model parameters
             update_start_time = time.time()
             if args.use_dqn:
-                exps, logs1 = algo.collect_experiences(replay_buffer = replay_buffer)
+                exps, logs1 = algo.collect_experiences(replay_buffer=replay_buffer)
             else:
                 exps, logs1 = algo.collect_experiences()
             logs2 = algo.update_parameters(exps)
@@ -265,6 +228,26 @@ if __name__ == "__main__":
             num_frames += logs["num_frames"]
             pbar.update(logs["num_frames"])
             update += 1
+
+            # Update Planner
+            if args.use_dqn:
+                batch = replay_buffer.sample(args.batch_size)
+                batch = ptu.from_numpy(batch)
+                rewards = batch["rewards"]
+                if args.llm_augmented:
+                    llm_rsp = llm_model.get_skills_and_goals(batch["observations"])
+                    dqn_rsp = acmodel.get_skills_and_goals(batch["observations"])
+                    rewards = rewards + similarity_bonus(llm_rsp, dqn_rsp)
+
+                acmodel.dqn_agent.update(            
+                    batch["observations"],
+                    batch["actions"],
+                    rewards,
+                    batch["next_observations"],
+                    batch["dones"],
+                    update,
+                )
+
 
             # Print logs
             if update % args.log_interval == 0:
