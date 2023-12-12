@@ -13,6 +13,7 @@ from minigrid.core.constants import COLOR_TO_IDX, OBJECT_TO_IDX
 
 def make_env(env_key, seed=None, render_mode=None, obs_size=7):
     '''
+    obs_size: 0 for partial 7 and full observation. obs['full_image'] is the full observation.
     obs_size: -1 for fully observable
     '''
     if render_mode:
