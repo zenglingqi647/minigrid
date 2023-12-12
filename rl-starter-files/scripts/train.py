@@ -7,6 +7,8 @@ import sys
 from tqdm import tqdm
 
 import utils
+import numpy as np
+import torch
 from utils import device
 from model import ACModel
 import utils.pytorch_util as ptu
@@ -235,8 +237,22 @@ if __name__ == "__main__":
             # Update Planner
             if args.use_dqn:
                 batch = replay_buffer.sample(args.batch_size)
-                batch = ptu.from_numpy(batch)
-                rewards = batch["rewards"]
+
+                full_obs, text = [], []
+                next_full_obs, next_text = [], []
+                for i in range(args.batch_size):
+                    obs_dict, next_obs_dict = batch["observations"][i], batch["next_observations"][i]
+                    full_obs.append(obs_dict.full_obs)
+                    text.append(obs_dict.text)
+                    next_full_obs.append(next_obs_dict.full_obs)
+                    next_text.append(next_obs_dict.text)
+
+                obs = {"full_obs" : torch.stack(full_obs).float(), "text" : torch.stack(text) }
+                next_obs = {"full_obs" : torch.stack(next_full_obs).float(), "text" : torch.stack(next_text) }
+                rewards = ptu.from_numpy(batch["rewards"])
+                dones = ptu.from_numpy(batch["dones"])
+                actions = ptu.from_numpy(batch["actions"])
+
                 if args.llm_augmented:
                     llm_rsp = llm_model.get_skills_and_goals(batch["observations"])
                     dqn_rsp = acmodel.get_skills_and_goals(batch["observations"])
@@ -244,11 +260,12 @@ if __name__ == "__main__":
 
                 # TODO: when using the critic network, we directly pass in the embeddings (processed already by the CNN and GRU and concatenated together)
                 # When doing the target critic, we probably also want the same thing?
+                obs_embedded, next_obs_embedded = acmodel.get_embeddings(obs), acmodel.get_embeddings(next_obs)
                 acmodel.dqn_agent.update(            
-                    batch["observations"].float(),
+                    obs_embedded,
                     batch["actions"],
                     rewards,
-                    batch["next_observations"].float(),
+                    next_obs_embedded,
                     batch["dones"],
                     update,
                 )

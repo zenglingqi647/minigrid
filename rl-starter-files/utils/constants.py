@@ -30,3 +30,5 @@ PUT_NEXT = f"put the {0} {1} next to the {2} {3}"
 # In total, there are 18 + 6 + 18 + 6 + 6 * 3 * 6 * 3 = 366 configurations.
 
 SKILL_LIST = [GO_TO, OPEN, PICK_UP, UNLOCK, PUT_NEXT]
+
+FULL_OBSERVED_SIZE = 22

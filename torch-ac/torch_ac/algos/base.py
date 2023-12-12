@@ -140,15 +140,16 @@ class BaseAlgo(ABC):
             obs, reward, terminated, truncated, _ = self.env.step(action.cpu().numpy())
             done = tuple(a | b for a, b in zip(terminated, truncated))
             if replay_buffer != None:
+                preprocessed_next_obs = self.preprocess_obss(obs, device=self.device)
                 for idx in range(len(obs)):
                     replay_buffer.insert(
-                        observation=np.array(self.obs[idx]['full_obs']),
+                        observation=preprocessed_obs[idx],
                         action=action[idx].item(),
                         reward=reward[idx],
                         done=done[idx],
-                        next_observation=np.array(obs[idx]['full_obs']),
+                        next_observation=preprocessed_next_obs[idx],
                     )
-                # TODO: replay buffer here should just insert the fully observed stuff
+                # Issue: DQN here would never update the CNN and text feature extractors.
 
             # Update experiences values
 

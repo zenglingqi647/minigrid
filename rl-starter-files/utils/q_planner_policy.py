@@ -115,6 +115,24 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     def _get_embed_text(self, text):
         _, hidden = self.text_rnn(self.word_embedding(text))
         return hidden[-1]
+    
+    def get_embeddings(self, obs):
+        '''
+            Runs observation through image and text feature (if specified) extractors, resulting in a concatenated feature vector.
+        '''
+        obs_img : torch.Tensor = obs.full_obs
+
+        x = obs_img.transpose(1, 3).transpose(2, 3)
+        x = self.image_conv(x)
+        x = x.reshape(x.shape[0], -1)
+        embedding = x
+
+        if self.use_text:
+            embed_text = self._get_embed_text(obs.text)
+            embedding = torch.cat((embedding, embed_text), dim=1)
+
+        return embedding
+
 
     def get_skills_and_goals(self, obs):
         '''
@@ -127,20 +145,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         current_skills: list[int] = [0] * self.num_envs
         current_goals: list[int] = [None] * self.num_envs
 
-        obs_img : torch.Tensor = obs.full_obs
-        self.invert_vocab : dict = {v: k for k, v in self.vocab.items()}
-        # for idx in range(self.num_envs):
-        #     mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
-        #     print(f"Mission text sent is {mission_txt}")
-
-        x = obs_img.transpose(1, 3).transpose(2, 3)
-        x = self.image_conv(x)
-        x = x.reshape(x.shape[0], -1)
-        embedding = x
-
-        if self.use_text:
-            embed_text = self._get_embed_text(obs.text)
-            embedding = torch.cat((embedding, embed_text), dim=1)
+        embedding = self.get_embeddings(obs)
 
         action_nums = self.dqn_agent.get_action(embedding)
 
