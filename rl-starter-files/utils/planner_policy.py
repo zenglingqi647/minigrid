@@ -9,7 +9,7 @@ from torch_ac.utils.dictlist import DictList
 import torch_ac
 from torch.distributions import Categorical
 from .other import device
-from utils.prompt_validation import parse_goal
+from utils.prompt_validation import validate_goal
 
 
 SKILL_MDL_PATH = [
@@ -120,6 +120,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                     elif self.llm_variant == "human":
                         skill_num, goal_text = human_skill_planning()
                     # TODO
+                    validate_goal(skill_num, goal_text)
                     # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
                     print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
                 except Exception as e:
