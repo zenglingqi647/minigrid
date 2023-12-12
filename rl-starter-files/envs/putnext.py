@@ -3,7 +3,7 @@ from __future__ import annotations
 from minigrid.envs.babyai.core.roomgrid_level import RoomGridLevel
 from minigrid.envs.babyai.core.verifier import ObjDesc, PutNextInstr
 
-putnext_dict = {
+PUTNEXT_DICT = {
     0: {
         "name": "PutNextLocal",
         "envs": [f'BabyAI-CustomPutNextLocalS{s}N{n}' for s in range(5, 9) for n in range(2, 5)]

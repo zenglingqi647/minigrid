@@ -10,7 +10,7 @@ from minigrid.envs.babyai.core.verifier import (
     OpenInstr,
 )
 
-open_dict = {
+OPEN_DICT = {
     0: {
         "name": "CustomOpenDoor",
         "envs": [f"BabyAI-CustomOpenDoor{j}-{i}" for i in range(0, 4) for j in ["", "-color", "-loc"]]

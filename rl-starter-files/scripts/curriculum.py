@@ -1,21 +1,21 @@
 from envs.goto import goto_dict
-from envs.open import open_dict
-from envs.pickup import pickup_dict
-from envs.putnext import putnext_dict
-from envs.unlock import unlock_dict
+from envs.open import OPEN_DICT
+from envs.pickup import PICKUP_DICT
+from envs.putnext import PUTNEXT_DICT
+from envs.unlock import UNLOCK_DICT
 
 
 def get_curriculum(args):
     if args.skill == 'goto':
         return Curriculum(goto_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'open':
-        return Curriculum(open_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+        return Curriculum(OPEN_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'pickup':
-        return Curriculum(pickup_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+        return Curriculum(PICKUP_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'putnext':
-        return Curriculum(putnext_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+        return Curriculum(PUTNEXT_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     elif args.skill == 'unlock':
-        return Curriculum(unlock_dict, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
+        return Curriculum(UNLOCK_DICT, args.upgrade_threshold, args.downgrade_threshold, args.repeat_threshold)
     else:
         raise NotImplementedError
 

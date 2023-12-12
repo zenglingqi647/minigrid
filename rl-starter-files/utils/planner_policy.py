@@ -118,6 +118,8 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                         skill_num = llama_skill_planning(obs_img.cpu().numpy(), mission_txt)
                     elif self.llm_variant == "human":
                         skill_num, goal_text = human_skill_planning()
+                    # TODO
+                    # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
                     print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
                 except Exception as e:
                     print(f"Planning failed with error {e}, using the old goal and current skill.")

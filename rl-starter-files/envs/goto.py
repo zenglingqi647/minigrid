@@ -5,7 +5,7 @@ from minigrid.envs.babyai.core.verifier import GoToInstr, ObjDesc
 from minigrid.envs.babyai.goto import GoToRedBallGrey, GoToRedBall, GoToRedBlueBall
 
 
-goto_dict = {
+GOTO_DICT = {
     0: {
         "name": "GoToObj",
         # "envs": ["BabyAI-GoToObjS4-v0", "BabyAI-GoToObjS6-v0", "BabyAI-GoToObj-v0"]
