@@ -29,11 +29,7 @@ class Agent:
             self.memories = torch.zeros(self.num_envs, self.acmodel.memory_size, device=device)
 
         state_dict = utils.get_model_state(model_dir)
-        new_state_dict = {}
-        for k in state_dict.keys():
-            if not "ac_models" in k:
-                new_state_dict[k] = state_dict[k]
-        self.acmodel.load_state_dict(new_state_dict, strict=False)
+        self.acmodel.load_state_dict(state_dict, strict=False)
         self.acmodel.to(device)
         self.acmodel.eval()
         

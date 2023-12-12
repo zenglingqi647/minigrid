@@ -1,3 +1,4 @@
+from typing import Any, Mapping
 import torch.nn as nn
 import torch
 from pathlib import Path
@@ -69,6 +70,9 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     @property
     def semi_memory_size(self):
         return self.image_embedding_size
+    
+    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False):
+        return
 
     def load_model(self, index):
         mdl = ACModel(self.obs_space, self.action_space, self.use_memory, self.use_text)
