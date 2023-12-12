@@ -100,7 +100,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             self.ac_models.append(self.load_model(i))
 
         self.llm_augmented = llm_augmented
-        self.dqn_agent = DQNAgent(observation_shape=(self.embedding_size, 1), num_actions=48, discount=0.99, target_update_period=1000, use_double_q=True)
+        self.dqn_agent = DQNAgent(observation_shape=self.embedding_size, num_actions=48, discount=0.99, target_update_period=1000, use_double_q=True)
 
         # self.lock = threading.Lock()
 

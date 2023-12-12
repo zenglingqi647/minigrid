@@ -12,17 +12,18 @@ from .other import device
 
 
 SKILL_MDL_PATH = [
-    "storage/skill-model-v2/GoTo",
-    "storage/skill-model-v1-curriculum/OpenDoor",
+    "storage/skill-model-v2/Goto-Finetune",
+    "storage/skill-model-v2/Open",
     "storage/skill-model-v2/PickUp",
-    "storage/skill-model-v2/PutNext",
     "storage/skill-model-v2/Unlock-Finetune",
+    # "storage/skill-model-v1-curriculum/PutNext"
 ]
+
 
 class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
     '''ask_cooldown: how many steps to wait before asking GPT again. For synchronization.'''
     
-    def __init__(self, skill_obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=5):
+    def __init__(self, skill_obs_space, action_space, vocab, llm_variant, ask_cooldown, num_procs, use_memory=False, use_text=False, num_skills=4):
         super().__init__()
         # adapted from ACModel
         self.use_memory = use_memory

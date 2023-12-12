@@ -7,11 +7,11 @@ import numpy as np
 
 import utils.pytorch_util as ptu
 
-hidden_size: int = 64,
-num_layers: int = 2,
-learning_rate: float = 1e-3,
-# total_steps: int = 1000000,
-# discount: float = 0.95,
+hidden_size: int = 64
+num_layers: int = 2
+learning_rate: float = 1e-3
+# total_steps: int = 1000000
+# discount: float = 0.95
 # target_update_period: int = 300
 def make_critic(observation_shape: Tuple[int, ...], num_actions: int) -> nn.Module:
         return ptu.build_mlp(

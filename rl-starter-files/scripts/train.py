@@ -164,7 +164,8 @@ if __name__ == "__main__":
         acmodel = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
     elif args.use_dqn:
         acmodel = QPlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text, num_skills=4, llm_augmented=args.llm_augmented)
-        llm_model = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
+        if args.llm_augmented:
+            llm_model = PlannerPolicy(obs_space, envs[0].action_space, preprocess_obss.vocab, llm_variant=args.llm_planner_variant, ask_cooldown=args.ask_every, num_procs=args.procs, use_memory=args.mem, use_text=args.text)
     else:
         acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
     if "model_state" in status:
