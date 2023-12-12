@@ -70,23 +70,33 @@ class SimpleChatIO(ChatIO):
             except EOFError as e:
                 break
         return "\n".join(prompt_data)
-
-    def prompt_for_output(self) -> None:
+    
+    def prompt_for_output(self, role: str):
         """indicates the role of output. Skipped."""
         pass
-
+    
     def stream_output(self, output_stream):
         pre = 0
-        txt = ""
         for outputs in output_stream:
             output_text = outputs["text"]
             output_text = output_text.strip().split(" ")
             now = len(output_text) - 1
             if now > pre:
-                txt += " ".join(output_text[pre:now])
                 pre = now
-        txt += " ".join(output_text[pre:])
-        return txt
+        return " ".join(output_text)
+    
+    # def stream_output(self, output_stream):
+    #     pre = 0
+    #     txt = ""
+    #     for outputs in output_stream:
+    #         output_text = outputs["text"]
+    #         output_text = output_text.strip().split(" ")
+    #         now = len(output_text) - 1
+    #         if now > pre:
+    #             txt += " ".join(output_text[pre:now])
+    #             pre = now
+    #     txt += " ".join(output_text[pre:])
+    #     return txt
 
     def print_output(self, text: str):
         print(text)
@@ -157,7 +167,7 @@ def chat_loop(
         }
 
         try:
-            chatio.prompt_for_output(conv.roles[1])
+            # chatio.prompt_for_output(role=conv.roles[1])
             output_stream = generate_stream_func(
                 model,
                 tokenizer,

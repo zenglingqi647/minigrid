@@ -29,7 +29,7 @@ parser.add_argument("--save-interval",
 parser.add_argument("--procs", type=int, default=64, help="number of processes (vanilla default: 16)")
 parser.add_argument("--obs-size",
                     type=int,
-                    default=11,
+                    default=0,
                     help="size of observation for environment, should be an odd number (default: 11)")
 
 # Parameters for main algorithm

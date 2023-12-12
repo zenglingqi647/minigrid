@@ -137,15 +137,3 @@ if __name__ == "__main__":
         plt.figure()
         plt.imshow(env.render())
         plt.savefig("test.png")
-        # print(get_prompt_str(obs))
-
-        # print('llm response: ')
-        # trajectory_json = trajectory_gen(obs)
-        # print(trajectory_json)
-        # print('Here is the trajectory: ')
-        # if trajectory_json.startswith("'") and trajectory_json.endswith("'"):
-        #     trajectory_json = trajectory_json[1:-1]
-        # trajectory_str = json.loads(trajectory_json)
-        # # Convert the trajectory string to a list of actions
-        # trajectory = [trajectory_str[f'{i}'] for i in range(10)]
-        # print(trajectory)
