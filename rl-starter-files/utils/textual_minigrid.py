@@ -11,6 +11,7 @@ from utils.format import Vocabulary
 from minigrid.wrappers import FullyObsWrapper
 import random
 import re
+import json
 
 IDX_TO_STATE = {v: k for k, v in STATE_TO_IDX.items()}
 DIR_TO_STR = {0: "right", 1: "down", 2: "left", 3: "up"}
@@ -33,6 +34,8 @@ def get_absolute_position(i, j, img):
 
 def get_object_name(r, c, img):
     obj = IDX_TO_OBJECT[img[c, r, 0]]
+    if obj == "agent":
+        return None
     color = IDX_TO_COLOR[img[c, r, 1]]
     state = IDX_TO_STATE[img[c, r, 2]]
     obj_info = None
@@ -106,6 +109,7 @@ Your agent would like to {act}. Evaluate how this state and action is helpful fo
 def get_planning_prompt_str(obs_img, mission_txt):
     room_r, room_c = get_agent_position(obs_img)
     image_as_str, mission = img_to_str(obs_img), mission_txt
+    json_example = "{ skill : 0, goal : 'go to the red box' }"
     return f'''You are an agent in a Minigrid environment. Your agent is in Room {(room_r, room_c)}. Rooms are 7 by 7, and there are 9 of them, connected by doors. Your mission is {mission}. Here is the state of the entire environment: 
     
     {image_as_str}
@@ -123,22 +127,17 @@ Skill 2: Pickup an item
     [color]: the color of the object. Allowed values are "red", "green", "blue", "purple", "yellow" or "grey".
     [type]: the type of the object. Allowed values are "ball", "box", or "key".
 Skill 3: Unlock a door
-    "unlock the [color] [type]"
+    "unlock the [color] door"
     [color]: the color of the object. Allowed values are "red", "green", "blue", "purple", "yellow" or "grey".
 
-Based on the current state of the agent, what is the first skill it should use, and what would be the short-term goal for that skill (most likely different from the long-term) ? Use the format "Answer: Skill [a number from 0 to 3], Goal [describe the goal].". No need to put quotes around the goal.
+Based on the current state of the agent, what is the first skill it should use, and what would be the short-term goal for that skill (most likely different from the long-term) ? Format your answer in json format. As an example, you can return {json_example}.
 '''
 
 def gpt_skill_planning(obs_img, mission_txt):
     prompt = get_planning_prompt_str(obs_img, mission_txt)
     response = interact_with_gpt(prompt)
-    match = re.search(r'Answer: Skill (\d), Goal (.+)\.', response)
-    if match:
-        skill = int(match.group(1))
-        goal = match.group(2)
-        return skill, goal
-    else:
-        raise Exception("The language model did not generate a valid response.")
+    answer = json.loads(response)
+    return answer['skill'], answer['goal']
 
 def llama_skill_planning(obs, mission_txt):
     prompt = get_planning_prompt_str(obs, mission_txt)
