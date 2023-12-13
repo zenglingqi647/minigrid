@@ -105,7 +105,9 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         # assert (obs.full_obs.shape[0] == self.num_envs)
         # assert (obs.text.shape[0] == self.num_envs)
         assert(obs.full_obs.shape[0] == obs.text.shape[0])
-
+        current_skills = [None] * obs.text.shape[0]
+        current_goals = [None] * obs.text.shape[0]
+        current_goals_text = [None] * obs.text.shape[0]
         if self.timer == 0:
             # Iterate over batches
             for idx in range(obs.full_obs.shape[0]):
@@ -143,10 +145,13 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                         print(e)
 
                 # Store the skill numbers and goal tokens returned by the planner
-                self.current_skills[idx] = skill_num
-                self.current_goals[idx] = goal_tokens
-                self.current_goals_text[idx] = goal_text
+                current_skills[idx] = skill_num
+                current_goals[idx] = goal_tokens
+                current_goals_text[idx] = goal_text
             self.timer = self.ask_cooldown
+            self.current_skills = current_skills
+            self.current_goals = current_goals
+            self.current_goals_text = current_goals_text
         return self.current_skills, self.current_goals, self.current_goals_text
 
     def forward(self, obs : DictList, memory):
