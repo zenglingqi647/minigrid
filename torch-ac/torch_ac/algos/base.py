@@ -3,9 +3,6 @@ import torch
 import numpy as np
 from torch_ac.format import default_preprocess_obss
 from torch_ac.utils import DictList, ParallelEnv
-from gymnasium.vector import AsyncVectorEnv
-from torch_ac.algos.replay_buffer import ReplayBuffer
-from utils.planner_policy import PlannerPolicy
 
 
 class BaseAlgo(ABC):
@@ -132,10 +129,7 @@ class BaseAlgo(ABC):
             preprocessed_obs = self.preprocess_obss(self.obs, device=self.device)
             with torch.no_grad():
                 if self.acmodel.recurrent:
-                    if isinstance(self.acmodel, PlannerPolicy):
-                        dist, value, memory = self.acmodel(preprocessed_obs, self.memory * self.mask.unsqueeze(1), advance_time=True)
-                    else:
-                        dist, value, memory = self.acmodel(preprocessed_obs, self.memory * self.mask.unsqueeze(1))
+                    dist, value, memory = self.acmodel(preprocessed_obs, self.memory * self.mask.unsqueeze(1))
                 else:
                     dist, value = self.acmodel(preprocessed_obs)
             action = dist.sample()

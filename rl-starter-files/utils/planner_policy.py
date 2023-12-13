@@ -91,19 +91,20 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         for p in mdl.parameters():
             p.requires_grad = True
         return mdl
+    
+    def decrease_cooldown(self):
+        if self.timer > 0:
+            self.timer -= 1
 
-    def get_skills_and_goals(self, obs : DictList, advance_time):
+    def get_skills_and_goals(self, obs : DictList):
         '''
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
-        if not advance_time:
-            return self.current_skills, self.current_goals
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
         assert (obs.full_obs.shape[0] == self.num_envs)
         assert (obs.text.shape[0] == self.num_envs)
 
         if self.timer == 0:
-
             # Iterate over batches
             for idx in range(obs.full_obs.shape[0]):
 
@@ -141,11 +142,9 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 goal_tokens = torch.IntTensor(goal_tokens).to(device)
                 self.current_goals[idx] = goal_tokens
             self.timer = self.ask_cooldown
-        else:
-            self.timer -= 1
         return self.current_skills, self.current_goals
 
-    def forward(self, obs : DictList, memory, advance_time=False):
+    def forward(self, obs : DictList, memory):
         '''
             If you need to update the ask_cooldown (collecting new experiences rather than learning from the collected experience), set advance_time to True.
         '''
@@ -155,7 +154,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         # In each iteration of this loop, we need to extract one step of observations from all parallel environments, and ask get_skill.
         for i in range(0, len(obs), self.num_envs):
             obs_one_step = obs[i:i + self.num_envs]
-            current_skills, current_goals = self.get_skills_and_goals(obs_one_step, advance_time)
+            current_skills, current_goals = self.get_skills_and_goals(obs_one_step)
 
             # Iterate over skill and goal token pairs
             # Need to gather the dist, value, and memory
