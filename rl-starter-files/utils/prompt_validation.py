@@ -66,7 +66,7 @@ def similarity(llm_skill, llm_goal, dqn_skill, dqn_goal):
     similarity = []
     for key in llm_return.keys():
         similarity.append(llm_return[key] == dqn_return[key])
-    return sum(similarity) / len(similarity)
+    return sum(similarity)
 
 
 # TODO: validation, similarity
