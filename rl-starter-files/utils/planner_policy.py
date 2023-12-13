@@ -9,7 +9,6 @@ from torch_ac.utils.dictlist import DictList
 import torch_ac
 from torch.distributions import Categorical
 from .other import device
-from utils.prompt_validation import validate_goal
 
 
 SKILL_MDL_PATH = [
@@ -97,6 +96,12 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         if self.timer > 0:
             self.timer -= 1
 
+    def validate_goal(self, skill_num, goal_text):
+        vocab = self.skill_vocabs[skill_num]
+        for s in goal_text.split():
+            if s not in vocab.vocab:
+                raise ValueError(f"The word {s} is unknown.")
+
     def get_skills_and_goals(self, obs : DictList):
         '''
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
@@ -115,7 +120,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 # Extract the individual image and mission texts
                 obs_img : torch.Tensor = obs.full_obs[idx]
                 self.invert_vocab : dict = {v: k for k, v in self.vocab.items()}
-                mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
+                mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx] if s.item() != 0])
                 print(f"Mission text sent is {mission_txt}")
 
                 planning_success = False
@@ -129,7 +134,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                         elif self.llm_variant == "human":
                             skill_num, goal_text = human_skill_planning()
                         
-                        validate_goal(skill_num, goal_text)
+                        self.validate_goal(skill_num, goal_text)
                         # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
                         print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
                         goal_tokens = []

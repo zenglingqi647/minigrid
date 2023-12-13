@@ -48,10 +48,6 @@ def parse_goal(skill, goal):
     return None  # Return None if no match is found
 
 
-def validate_goal(skill, goal):
-    if not parse_goal(skill, goal):
-        raise ValueError('Goal and skill mismatch!')
-
 
 def similarity(llm_skill, llm_goal, dqn_skill, dqn_goal):
     llm_return = parse_goal(llm_skill, llm_goal)
