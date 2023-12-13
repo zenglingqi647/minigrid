@@ -241,11 +241,11 @@ if __name__ == "__main__":
 
             # Update Planner
             if args.use_dqn:
-                batch = replay_buffer.sample(args.batch_size)
+                batch = replay_buffer.sample(64)
 
                 full_obs, text = [], []
                 next_full_obs, next_text = [], []
-                for i in range(args.batch_size):
+                for i in range(64):
                     obs_dict, next_obs_dict = batch["observations"][i], batch["next_observations"][i]
                     # Replay buffer does not store DictList, but just store dicts.
                     full_obs.append(obs_dict['full_obs'])
@@ -264,7 +264,7 @@ if __name__ == "__main__":
                     dqn_rsp_skill, _, dqn_rsp_goal = acmodel.get_skills_and_goals(obs)
                     bonus =  similarity_bonus(llm_rsp_skill, llm_rsp_goal, dqn_rsp_skill, dqn_rsp_goal)
                     assert(bonus.shape == rewards.shape)
-                    rewards = rewards + bonus
+                    rewards = rewards + bonus.to(device)
 
                 # TODO: when using the critic network, we directly pass in the embeddings (processed already by the CNN and GRU and concatenated together)
                 # When doing the target critic, we probably also want the same thing?

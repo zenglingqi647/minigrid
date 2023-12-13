@@ -150,7 +150,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
 
         action_nums = self.dqn_agent.get_action(embedding)
 
-        for idx in range(self.num_envs):
+        for idx in range(obs.full_obs.shape[0]):
             skill_num, goal_text = self.parse_action(action_nums[idx])
 
             goal_tokens = []
