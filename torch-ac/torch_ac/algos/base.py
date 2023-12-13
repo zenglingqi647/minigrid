@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from torch_ac.format import default_preprocess_obss
 from torch_ac.utils import DictList, ParallelEnv
-
+import torch_ac.utils.pytorch_util as ptu
 
 class BaseAlgo(ABC):
     """The base class for RL algorithms."""
@@ -140,11 +140,11 @@ class BaseAlgo(ABC):
                 preprocessed_next_obs = self.preprocess_obss(obs, device=self.device)
                 for idx in range(len(obs)):
                     replay_buffer.insert(
-                        observation=preprocessed_obs[idx],
+                        observation=ptu.to_numpy(preprocessed_obs[idx]),
                         action=action[idx].item(),
                         reward=reward[idx],
                         done=done[idx],
-                        next_observation=preprocessed_next_obs[idx],
+                        next_observation=ptu.to_numpy(preprocessed_next_obs[idx]),
                     )
 
             # Update experiences values

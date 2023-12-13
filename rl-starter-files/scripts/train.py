@@ -243,13 +243,14 @@ if __name__ == "__main__":
                 next_full_obs, next_text = [], []
                 for i in range(args.batch_size):
                     obs_dict, next_obs_dict = batch["observations"][i], batch["next_observations"][i]
-                    full_obs.append(obs_dict.full_obs.float())
-                    text.append(obs_dict.text)
-                    next_full_obs.append(next_obs_dict.full_obs.float())
-                    next_text.append(next_obs_dict.text)
+                    # Replay buffer does not store DictList, but just store dicts.
+                    full_obs.append(obs_dict['full_obs'])
+                    text.append(obs_dict['text'])
+                    next_full_obs.append(next_obs_dict['full_obs'])
+                    next_text.append(next_obs_dict['text'])
                 
-                obs = DictList({ "full_obs" : torch.stack(full_obs), "text" : torch.stack(text) })
-                next_obs = DictList({"full_obs" : torch.stack(next_full_obs), "text" : torch.stack(next_text) })
+                obs = DictList({ "full_obs" : ptu.from_numpy(np.stack(full_obs)), "text" : ptu.from_numpy(np.stack(text)) })
+                next_obs = DictList({"full_obs" : ptu.from_numpy(np.stack(next_full_obs)), "text" : ptu.from_numpy(np.stack(next_text)) })
                 rewards = ptu.from_numpy(batch["rewards"])
                 dones = ptu.from_numpy(batch["dones"])
                 actions = ptu.from_numpy(batch["actions"])
