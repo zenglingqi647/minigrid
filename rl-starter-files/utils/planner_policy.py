@@ -136,7 +136,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                     print("Planning failed, using the old goal and current skill. The following is the error message:")
                     print(e)
                     skill_num = self.current_skills[idx]
-                    goal_tokens = self.goal_tokens[idx]
+                    goal_tokens = self.current_goals[idx]
                     return self.current_skills, self.current_goals
 
                 # Store the skill numbers and goal tokens returned by the planner
