@@ -80,7 +80,7 @@ parser.add_argument("--use-trajectory",
 parser.add_argument('--traj-r-decay', type=float, default=0.7, help='Decay factor for trajectory reward')
 parser.add_argument('--llm-temperature', type=float, default=0.3, help='Temperature for LLM reward')
 parser.add_argument("--ask-gpt-prob", type=float, default=-1, help="Probability of Asking GPT")
-parser.add_argument("--ask-every", type=float, default=20, help="Number of update iterations between asking GPT")
+parser.add_argument("--ask-every", type=float, default=2, help="Number of update iterations between asking GPT")
 parser.add_argument("--llm-planner-variant", type=str, default=None, help="LLM Planner Variant")
 parser.add_argument("--use-position-bonus",
                     action="store_true",
