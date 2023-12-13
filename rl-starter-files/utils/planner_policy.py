@@ -149,7 +149,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                     except Exception as e:
                         print("Planning failed, using the old goal and current skill. Replanning...")
                         print(e)
-                        time.sleep(1)
+                        time.sleep(10)
 
                 # Store the skill numbers and goal tokens returned by the planner
                 current_skills[idx] = skill_num
