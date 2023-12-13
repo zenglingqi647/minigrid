@@ -126,20 +126,21 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                     validate_goal(skill_num, goal_text)
                     # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
                     print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
+                    goal_tokens = []
+                    for s in goal_text.split():
+                        if s not in self.skill_vocabs[skill_num].vocab:
+                            print(f"Warning: unknown word {s} in mission text {goal_text}")
+                        goal_tokens.append(self.skill_vocabs[skill_num][s])
+                    goal_tokens = torch.IntTensor(goal_tokens).to(device)
                 except Exception as e:
                     print("Planning failed, using the old goal and current skill. The following is the error message:")
                     print(e)
+                    skill_num = self.current_skills[idx]
+                    goal_tokens = self.goal_tokens[idx]
                     return self.current_skills, self.current_goals
 
                 # Store the skill numbers and goal tokens returned by the planner
                 self.current_skills[idx] = skill_num
-
-                goal_tokens = []
-                for s in goal_text.split():
-                    if s not in self.skill_vocabs[skill_num].vocab:
-                        print(f"Warning: unknown word {s} in mission text {goal_text}")
-                    goal_tokens.append(self.skill_vocabs[skill_num][s])
-                goal_tokens = torch.IntTensor(goal_tokens).to(device)
                 self.current_goals[idx] = goal_tokens
             self.timer = self.ask_cooldown
         return self.current_skills, self.current_goals
