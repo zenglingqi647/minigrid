@@ -265,6 +265,8 @@ if __name__ == "__main__":
 
                 if args.llm_augmented:
                     llm_rsp_skill, _, llm_rsp_goal = llm_model.get_skills_and_goals(obs)
+                    llm_model.decrease_cooldown()
+                    print(f"Asking LLM in {llm_model.timer} updates.")
                     dqn_rsp_skill, _, dqn_rsp_goal = acmodel.get_skills_and_goals(obs)
                     bonus =  similarity_bonus(llm_rsp_skill, llm_rsp_goal, dqn_rsp_skill, dqn_rsp_goal)
                     assert(bonus.shape == rewards.shape)
