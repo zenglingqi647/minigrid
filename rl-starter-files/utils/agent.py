@@ -48,6 +48,9 @@ class Agent:
         else:
             actions = dist.sample()
 
+        if isinstance(self.acmodel, PlannerPolicy):
+            self.acmodel.decrease_cooldown()
+
         return actions.cpu().numpy()
 
     def get_action(self, obs):

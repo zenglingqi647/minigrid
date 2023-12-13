@@ -202,6 +202,8 @@ if __name__ == "__main__":
         algo = torch_ac.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
         args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss,
         reshape_reward)
+    elif args.algo == "base":
+        algo = torch_ac.BaseAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence, preprocess_obss, None)
     else:
         raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
@@ -292,20 +294,26 @@ if __name__ == "__main__":
                 data += rreturn_per_episode.values()
                 header += ["num_frames_" + key for key in num_frames_per_episode.keys()]
                 data += num_frames_per_episode.values()
-                header += ["entropy", "value", "policy_loss", "value_loss", "grad_norm"]
-                data += [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
-
-                if args.use_dqn:
-                    header += ["critic_loss", "q_values", "target_values"]
-                    data += [logs["critic_loss"], logs["q_values"], logs["target_values"]]
-
+                
+                if args.algo == "base":
                     txt_logger.info(
-                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f} | criticL {:.3f} | Q {:.3f} | targetQ {:.3f} "
+                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} "
                         .format(*data))
                 else:
-                    txt_logger.info(
-                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
-                        .format(*data))
+                    header += ["entropy", "value", "policy_loss", "value_loss", "grad_norm"]
+                    data += [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
+
+                    if args.use_dqn:
+                        header += ["critic_loss", "q_values", "target_values"]
+                        data += [logs["critic_loss"], logs["q_values"], logs["target_values"]]
+
+                        txt_logger.info(
+                            "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f} | criticL {:.3f} | Q {:.3f} | targetQ {:.3f} "
+                            .format(*data))
+                    else:
+                        txt_logger.info(
+                            "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
+                            .format(*data))
 
                 header += ["return_" + key for key in return_per_episode.keys()]
                 data += return_per_episode.values()
@@ -324,8 +332,9 @@ if __name__ == "__main__":
                     "num_frames": num_frames,
                     "update": update,
                     "model_state": acmodel.state_dict(),
-                    "optimizer_state": algo.optimizer.state_dict()
                 }
+                if hasattr(algo, "optimizer"):
+                    status["optimizer_state"] = algo.optimizer.state_dict()
                 if hasattr(preprocess_obss, "vocab"):
                     status["vocab"] = preprocess_obss.vocab.vocab
                 utils.save_status(status, model_dir)

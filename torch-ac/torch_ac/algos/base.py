@@ -248,6 +248,5 @@ class BaseAlgo(ABC):
 
         return exps, logs
 
-    @abstractmethod
-    def update_parameters(self):
-        pass
+    def update_parameters(self, *args, **kwargs):
+        return {}
