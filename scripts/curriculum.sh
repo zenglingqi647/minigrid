@@ -3,6 +3,7 @@ cd "/data1/lzengaf/cs285/proj/minigrid/rl-starter-files"
 export PYTHONPATH="/data1/lzengaf/cs285/proj/minigrid/rl-starter-files":$PYTHONPATH
 export CUDA_VISIBLE_DEVICES=
 
+tmux
 tmux attach -t 
 tmux kill-session
 clear
