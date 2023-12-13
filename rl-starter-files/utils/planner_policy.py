@@ -101,8 +101,13 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
-        assert (obs.full_obs.shape[0] == self.num_envs)
-        assert (obs.text.shape[0] == self.num_envs)
+        # assert (obs.full_obs.shape[0] == self.num_envs)
+        # assert (obs.text.shape[0] == self.num_envs)
+        assert(obs.full_obs.shape[0] == obs.text.shape[0])
+
+        current_skills: list[int] = [0] * obs.full_obs.shape[0]
+        current_goals: list[int] = [None] * obs.full_obs.shape[0]
+        current_goals_text: list[str] = [None] * obs.full_obs.shape[0]
 
         if self.timer == 0:
             # Iterate over batches
@@ -135,15 +140,17 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 except Exception as e:
                     print("Planning failed, using the old goal and current skill. The following is the error message:")
                     print(e)
-                    skill_num = self.current_skills[idx]
-                    goal_tokens = self.current_goals[idx]
-                    return self.current_skills, self.current_goals
+                    skill_num = self.current_skills[idx%self.num_envs]
+                    goal_tokens = current_goals[idx%self.num_envs]
+                    goal_text = ""
+                    return current_skills, current_goals, current_goals_text
 
                 # Store the skill numbers and goal tokens returned by the planner
-                self.current_skills[idx] = skill_num
-                self.current_goals[idx] = goal_tokens
+                current_skills[idx] = skill_num
+                current_goals[idx] = goal_tokens
+                current_goals_text[idx] = goal_text
             self.timer = self.ask_cooldown
-        return self.current_skills, self.current_goals
+        return current_skills, current_goals, current_goals_text
 
     def forward(self, obs : DictList, memory):
         '''
@@ -155,7 +162,8 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         # In each iteration of this loop, we need to extract one step of observations from all parallel environments, and ask get_skill.
         for i in range(0, len(obs), self.num_envs):
             obs_one_step = obs[i:i + self.num_envs]
-            current_skills, current_goals = self.get_skills_and_goals(obs_one_step)
+            current_skills, current_goals, _ = self.get_skills_and_goals(obs_one_step)
+            self.current_skills, self.current_goals = current_skills, current_goals
 
             # Iterate over skill and goal token pairs
             # Need to gather the dist, value, and memory

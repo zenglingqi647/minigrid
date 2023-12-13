@@ -139,11 +139,12 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             Get the skill numbers and goals for an observation. Must ensure observation batch size is the same as the number of parallel environments
         '''
         # Here, we enforce that the batch size of this obs is the same as the number of parallel environments
-        assert (obs.full_obs.shape[0] == self.num_envs)
-        assert (obs.text.shape[0] == self.num_envs)
-
-        current_skills: list[int] = [0] * self.num_envs
-        current_goals: list[int] = [None] * self.num_envs
+        # assert (obs.full_obs.shape[0] == self.num_envs)
+        # assert (obs.text.shape[0] == self.num_envs)
+        assert(obs.full_obs.shape[0] == obs.text.shape[0])
+        current_skills: list[int] = [0] * obs.full_obs.shape[0]
+        current_goals: list[int] = [None] * obs.full_obs.shape[0]
+        current_goal_texts: list[str] = [None] * obs.full_obs.shape[0]
 
         embedding = self.get_embeddings(obs)
 
@@ -161,8 +162,9 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
 
             current_skills[idx] = skill_num
             current_goals[idx] = goal_tokens
+            current_goal_texts[idx] = goal_text
 
-        return current_skills, current_goals
+        return current_skills, current_goals, current_goal_texts
 
     def forward(self, obs: DictList, memory):
         # here, obs is a dictionary of batched images and batched text. The batch size is a integer multiple of the number of parallel environments.
@@ -171,7 +173,7 @@ class QPlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         # In each iteration of this loop, we need to extract one step of observations from all parallel environments, and ask get_skill.
         for i in range(0, len(obs), self.num_envs):
             obs_one_step = obs[i:i + self.num_envs]
-            current_skills, current_goals = self.get_skills_and_goals(obs_one_step)
+            current_skills, current_goals, _ = self.get_skills_and_goals(obs_one_step)
             self.current_skills, self.current_goals = current_skills, current_goals
             # Iterate over skill and goal token pairs
             # Need to gather the dist, value, and memory
