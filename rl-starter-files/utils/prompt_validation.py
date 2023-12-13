@@ -54,9 +54,9 @@ def similarity(llm_skill, llm_goal, dqn_skill, dqn_goal):
     dqn_return = parse_goal(dqn_skill, dqn_goal)
 
     if not llm_return:
-        raise ValueError('LLM: Goal and skill mismatch!')
+        return 0
     if not dqn_return:
-        raise ValueError('DQN: Goal and skill mismatch!')
+        return 0
 
     # compare the skill, colors and types
     similarity = []
