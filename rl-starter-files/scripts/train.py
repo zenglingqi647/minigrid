@@ -21,6 +21,8 @@ from minigrid.wrappers import PositionBonus
 
 from torch_ac.algos.replay_buffer import ReplayBuffer
 
+from utils.prompt_validation import similarity
+
 # Parse arguments
 parser = argparse.ArgumentParser()
 
@@ -100,8 +102,8 @@ parser.add_argument("--llm-augmented",
                     help="if dqn planner is going to be llm augmented")
 
 
-def similarity_bonus(llm_rsp, dqn_rsp):
-    return 0
+def similarity_bonus(llm_rsp_skill, llm_rsp_goal, dqn_rsp_skill, dqn_rsp_goal):
+    return torch.tensor([similarity(llm_rsp_skill[i], llm_rsp_goal[i], dqn_rsp_skill[i], dqn_rsp_goal[i]) for i in range(len(llm_rsp_skill))])
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -258,9 +260,11 @@ if __name__ == "__main__":
                 actions = ptu.from_numpy(batch["actions"])
 
                 if args.llm_augmented:
-                    llm_rsp = llm_model.get_skills_and_goals(batch["observations"])
-                    dqn_rsp = acmodel.get_skills_and_goals(batch["observations"])
-                    rewards = rewards + similarity_bonus(llm_rsp, dqn_rsp)
+                    llm_rsp_skill, _, llm_rsp_goal = llm_model.get_skills_and_goals(obs)
+                    dqn_rsp_skill, _, dqn_rsp_goal = acmodel.get_skills_and_goals(obs)
+                    bonus =  similarity_bonus(llm_rsp_skill, llm_rsp_goal, dqn_rsp_skill, dqn_rsp_goal)
+                    assert(bonus.shape == rewards.shape)
+                    rewards = rewards + bonus
 
                 # TODO: when using the critic network, we directly pass in the embeddings (processed already by the CNN and GRU and concatenated together)
                 # When doing the target critic, we probably also want the same thing?
