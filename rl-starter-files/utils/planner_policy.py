@@ -152,6 +152,7 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
             self.current_skills = current_skills
             self.current_goals = current_goals
             self.current_goals_text = current_goals_text
+
         return self.current_skills, self.current_goals, self.current_goals_text
 
     def forward(self, obs : DictList, memory):
