@@ -299,25 +299,21 @@ if __name__ == "__main__":
                 header += ["num_frames_" + key for key in num_frames_per_episode.keys()]
                 data += num_frames_per_episode.values()
                 
-                if args.algo == "base":
-                    txt_logger.info(
-                        "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} "
-                        .format(*data))
-                else:
+                logs = "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} ".format(*data)
+
+                if "entropy" in logs:
                     header += ["entropy", "value", "policy_loss", "value_loss", "grad_norm"]
-                    data += [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
+                    new_data = [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
+                    logs += "| H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}".format(*new_data)
+                    data += new_data
+                    
+                if args.use_dqn:
+                    header += ["critic_loss", "q_values", "target_values"]
+                    new_data = [logs["critic_loss"], logs["q_values"], logs["target_values"]]
+                    logs += "| criticL {:.3f} | Q {:.3f} | targetQ {:.3f}".format(*new_data)
+                    data += new_data
 
-                    if args.use_dqn:
-                        header += ["critic_loss", "q_values", "target_values"]
-                        data += [logs["critic_loss"], logs["q_values"], logs["target_values"]]
-
-                        txt_logger.info(
-                            "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f} | criticL {:.3f} | Q {:.3f} | targetQ {:.3f} "
-                            .format(*data))
-                    else:
-                        txt_logger.info(
-                            "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
-                            .format(*data))
+                txt_logger.info(logs)
 
                 header += ["return_" + key for key in return_per_episode.keys()]
                 data += return_per_episode.values()

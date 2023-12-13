@@ -51,7 +51,8 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         self.num_envs = num_procs
 
         self.current_skills : list[int] = [0] * self.num_envs
-        self.current_goals : list[int] = [None] * self.num_envs
+        self.current_goals : list[int] = [torch.zeros(1) for _ in range(self.num_envs)]
+        self.current_goals_text : list[int] = ["" for _ in range(self.num_envs)]
         self.skill_vocabs : list[Vocabulary] = [None] * self.num_skills
         self.vocab : Vocabulary = vocab.vocab
         self.invert_vocab : dict = {v: k for k, v in self.vocab.items()}
@@ -105,10 +106,6 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
         # assert (obs.text.shape[0] == self.num_envs)
         assert(obs.full_obs.shape[0] == obs.text.shape[0])
 
-        current_skills: list[int] = [0] * obs.full_obs.shape[0]
-        current_goals: list[int] = [None] * obs.full_obs.shape[0]
-        current_goals_text: list[str] = [None] * obs.full_obs.shape[0]
-
         if self.timer == 0:
             # Iterate over batches
             for idx in range(obs.full_obs.shape[0]):
@@ -119,38 +116,38 @@ class PlannerPolicy(nn.Module, torch_ac.RecurrentACModel):
                 mission_txt = " ".join([self.invert_vocab[s.item()] for s in obs.text[idx]])
                 print(f"Mission text sent is {mission_txt}")
 
-                # Ask the LLM planner
-                try:
-                    if self.llm_variant == "gpt":
-                        skill_num, goal_text = gpt_skill_planning(obs_img.int().cpu().numpy(), mission_txt)
-                    elif self.llm_variant == "llama":
-                        skill_num, goal_text = llama_skill_planning(obs_img.int().cpu().numpy(), mission_txt)
-                    elif self.llm_variant == "human":
-                        skill_num, goal_text = human_skill_planning()
-                    # TODO
-                    validate_goal(skill_num, goal_text)
-                    # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
-                    print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
-                    goal_tokens = []
-                    for s in goal_text.split():
-                        if s not in self.skill_vocabs[skill_num].vocab:
-                            print(f"Warning: unknown word {s} in mission text {goal_text}")
-                        goal_tokens.append(self.skill_vocabs[skill_num][s])
-                    goal_tokens = torch.IntTensor(goal_tokens).to(device)
-                except Exception as e:
-                    print("Planning failed, using the old goal and current skill. The following is the error message:")
-                    print(e)
-                    skill_num = self.current_skills[idx%self.num_envs]
-                    goal_tokens = current_goals[idx%self.num_envs]
-                    goal_text = ""
-                    return current_skills, current_goals, current_goals_text
+                planning_success = False
+                while not planning_success:
+                    # Ask the LLM planner
+                    try:
+                        if self.llm_variant == "gpt":
+                            skill_num, goal_text = gpt_skill_planning(obs_img.int().cpu().numpy(), mission_txt)
+                        elif self.llm_variant == "llama":
+                            skill_num, goal_text = llama_skill_planning(obs_img.int().cpu().numpy(), mission_txt)
+                        elif self.llm_variant == "human":
+                            skill_num, goal_text = human_skill_planning()
+                        
+                        validate_goal(skill_num, goal_text)
+                        # validate_goal_text = self.skill_vocabs[skill_num].decode(self.current_goals[idx])
+                        print(f"Skill planning outcome: {skill_num}. Goal: {goal_text}")
+                        goal_tokens = []
+                        for s in goal_text.split():
+                            if s not in self.skill_vocabs[skill_num].vocab:
+                                print(f"Warning: unknown word {s} in mission text {goal_text}")
+                            goal_tokens.append(self.skill_vocabs[skill_num][s])
+                        goal_tokens = torch.IntTensor(goal_tokens).to(device)
+                        planning_success = True
+
+                    except Exception as e:
+                        print("Planning failed, using the old goal and current skill. Replanning...")
+                        print(e)
 
                 # Store the skill numbers and goal tokens returned by the planner
-                current_skills[idx] = skill_num
-                current_goals[idx] = goal_tokens
-                current_goals_text[idx] = goal_text
+                self.current_skills[idx] = skill_num
+                self.current_goals[idx] = goal_tokens
+                self.current_goals_text[idx] = goal_text
             self.timer = self.ask_cooldown
-        return current_skills, current_goals, current_goals_text
+        return self.current_skills, self.current_goals, self.current_goals_text
 
     def forward(self, obs : DictList, memory):
         '''
