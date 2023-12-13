@@ -100,6 +100,10 @@ parser.add_argument("--llm-augmented",
                     action="store_true",
                     default=False,
                     help="if dqn planner is going to be llm augmented")
+parser.add_argument("--dqn-batch-size",
+                    default=32,
+                    type=int,
+                    help="batch size of the DQN")
 
 
 def similarity_bonus(llm_rsp_skill, llm_rsp_goal, dqn_rsp_skill, dqn_rsp_goal):
@@ -241,11 +245,11 @@ if __name__ == "__main__":
 
             # Update Planner
             if args.use_dqn:
-                batch = replay_buffer.sample(64)
+                batch = replay_buffer.sample(args.dqn_batch_size)
 
                 full_obs, text = [], []
                 next_full_obs, next_text = [], []
-                for i in range(64):
+                for i in range(args.dqn_batch_size):
                     obs_dict, next_obs_dict = batch["observations"][i], batch["next_observations"][i]
                     # Replay buffer does not store DictList, but just store dicts.
                     full_obs.append(obs_dict['full_obs'])
@@ -299,21 +303,21 @@ if __name__ == "__main__":
                 header += ["num_frames_" + key for key in num_frames_per_episode.keys()]
                 data += num_frames_per_episode.values()
                 
-                logs = "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} ".format(*data)
+                log_txt = "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} ".format(*data)
 
                 if "entropy" in logs:
                     header += ["entropy", "value", "policy_loss", "value_loss", "grad_norm"]
                     new_data = [logs["entropy"], logs["value"], logs["policy_loss"], logs["value_loss"], logs["grad_norm"]]
-                    logs += "| H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}".format(*new_data)
+                    log_txt += "| H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}".format(*new_data)
                     data += new_data
                     
                 if args.use_dqn:
                     header += ["critic_loss", "q_values", "target_values"]
                     new_data = [logs["critic_loss"], logs["q_values"], logs["target_values"]]
-                    logs += "| criticL {:.3f} | Q {:.3f} | targetQ {:.3f}".format(*new_data)
+                    log_txt += "| criticL {:.3f} | Q {:.3f} | targetQ {:.3f}".format(*new_data)
                     data += new_data
 
-                txt_logger.info(logs)
+                txt_logger.info(log_txt)
 
                 header += ["return_" + key for key in return_per_episode.keys()]
                 data += return_per_episode.values()
