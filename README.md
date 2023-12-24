@@ -13,7 +13,7 @@ Our work leverages the planning capabilities of LLMs to augment a Deep Q-Network
 We benchmark our method against various baseline models in multiple complex test environments. These include models trained using Proximal Policy Optimization (PPO), Advantage Actor Critic (A2C), a standalone DQN planner, and a pure LLM planner. Our approach demonstrates improved performance over these baselines in certain scenarios and can even surpass a pure LLM-based planner due to the DQN's additional optimization. Both the LLM and DQN are shown to contribute to the model's performance through ablation studies. However, our method's performance is not consistently optimal, highlighting future research directions such as further training and benchmarking against state-of-the-art models in the BabyAI environment.
 
 
-# Directory structures:
+## Directory structures:
 experimental-code:
     Draft code, not really used
 
@@ -21,7 +21,7 @@ rl-starter-files:
     Cloned from the original repository, and I modified to include a GPT interface.
     I also wrote a GPT-based reward shaping function to ask GPT about the reward.
 
-# Running the code:
+## Running the code:
 Setting up the repository:
     After creating your conda environment:
 ```
