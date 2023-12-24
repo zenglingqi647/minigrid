@@ -3,7 +3,8 @@
 .vscode
 setup.sh
 rl-starter-files/storage
-rl-starter-files/storag
+rl-starter-files/storag*
+rl-starter-files/submissions
 ctrl.sh
 rl-starter-files/evaluate/
 rl-starter-files/log/

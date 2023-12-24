@@ -1,3 +1,18 @@
+# Final Project for COMPSCI 285
+## Extended Abstract
+
+In the dynamic field of Reinforcement Learning (RL) research, mastering long-horizon sparse-reward tasks remains a formidable challenge. Traditional RL agents, lacking prior knowledge, rely solely on sparse environmental rewards to discern effective actions. In contrast, humans leverage past knowledge to efficiently adapt and accomplish new tasks, a capability that current RL methodologies often lack.
+
+Recent advancements in Large Language Models (LLMs) like GPT and BERT have showcased their remarkable ability to encode vast world knowledge and perform contextual reasoning. However, LLMs are not inherently grounded in specific tasks or environments, and directly using them as primary agents can lead to uncertainty and instability. Moreover, the computational demands of these pre-trained models, with billions or trillions of parameters, make them impractical for local deployment. Concurrently, Hierarchical Reinforcement Learning (HRL) methods have shown promise in managing complex tasks by exploiting their hierarchical nature, central to which is an effective high-level planning policy that can reason about composing skills.
+
+Our work leverages the planning capabilities of LLMs to augment a Deep Q-Network (DQN) planner within an HRL framework. We first train a set of basic skill agents using curriculum learning in various BabyAI environments. These skills are then composed using a DQN planner, forming the basis of our hierarchical approach. The DQN planner is further augmented with an LLM-matching reward bonus, based on the similarity between its decisions and those suggested by the LLM during training. This integration offers three key advantages: 
+1. It eliminates the need for an LLM during evaluation, which is beneficial in environments with limited internet access, reduces LLM API costs and avoids rate-limiting issues.
+2. The DQN's learning process is accelerated by providing additional signals that would typically require manual specification.
+3. With sufficient experience, the system retains the potential to outperform pure LLM-based planners.
+
+We benchmark our method against various baseline models in multiple complex test environments. These include models trained using Proximal Policy Optimization (PPO), Advantage Actor Critic (A2C), a standalone DQN planner, and a pure LLM planner. Our approach demonstrates improved performance over these baselines in certain scenarios and can even surpass a pure LLM-based planner due to the DQN's additional optimization. Both the LLM and DQN are shown to contribute to the model's performance through ablation studies. However, our method's performance is not consistently optimal, highlighting future research directions such as further training and benchmarking against state-of-the-art models in the BabyAI environment.
+
+
 # Directory structures:
 experimental-code:
     Draft code, not really used
@@ -12,45 +27,4 @@ Setting up the repository:
 ```
 cd rl-starter-files
 pip install -r requirements.txt
-```
-
-Right now my training script:
-```
-cd rl-starter-files/
-
-python -m scripts.train --algo ppo --env BabyAI-GoToImpUnlock-v0 --model GoToImpUnlock0.0005Ask --text --save-interval 10 --frames 250000 --gpt
-```
-The problem is, an ask probability of 0.0005 is still very bad...It takes a really long time to train.
-
-# TODO
-### Baselines
-Basic: 
-> PPO, A2C only
-
-Exploration(?): 
-> RND: https://opendilab.github.io/DI-engine/12_policies/rnd.html
-> BeBold, NovelD: https://github.com/tianjunz/NovelD
-> Deir
-
-
-### **Update**
-- Bash script of experiments of different babyai and minigrid environments can be found as `babyai.sh` and `minigrid.sh`.
-
-- The reshaped reward with gpt predicting for a single action and for the next few actions (currently hardcoded as 10) are implemented and merged in the `train.py` and the `utils` folder.
-
-- Add `eval2excel.py` for evaluation and convert the results to excel files.
-
-
-To run:
-```
-/data1/lzengaf/cs285/proj/minigrid/experimental-code/llm-interface/llama2_interface.py
-```
-first run:
-```
-pip install langchain cmake
-export CMAKE_ARGS="-DLLAMA_METAL=on"
-FORCE_CMAKE=1 pip install -U llama-cpp-python --no-cache-dir
-
-curl https://ollama.ai/install.sh | sh
-
 ```
